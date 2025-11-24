@@ -19,15 +19,16 @@ export default class GameScene extends Phaser.Scene {
         this.wallManager = null;
         this.grid = null;
 
-        // Animation tracking
+        // Grid-based movement
         this.isMoving = false;
+        this.moveSpeed = 300; // pixels per second
+        this.targetPosition = null;
+        this.playerGridPos = { row: 0, col: 0 };
+        
+        // Animation
         this.currentFrame = 1;
         this.animationTimer = 0;
         this.animationSpeed = 90;
-    }
-
-    init() {
-        console.log('Game scene init method started');
     }
 
     preload() {
@@ -43,8 +44,6 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('human_up', '/assets/Human/human_3.png');
         this.load.image('human_left', '/assets/Human/human_2.png');
         this.load.image('human_right', '/assets/Human/human_1.png');
-
-        console.log('Loading assets...');
     }
 
     create() {
@@ -53,7 +52,6 @@ export default class GameScene extends Phaser.Scene {
         this._createWalls();
         this._initializePlayer();
         this.cursors = this.input.keyboard.createCursorKeys();
-        console.log('Game scene create - check for errors above');
     }
 
     _generateMaze() {
@@ -78,34 +76,109 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _initializePlayer() {
-        console.log('Initializing player...'); 
-
-        const startX = Math.floor(this.BOARD_WIDTH / 2) * this.GRID_SIZE + this.GRID_SIZE / 2;
-        const startY = Math.floor(this.BOARD_HEIGHT / 2) * this.GRID_SIZE + this.GRID_SIZE / 2;
+        // Start player in the middle of the grid
+        this.playerGridPos = {
+            row: Math.floor(this.BOARD_HEIGHT / 2),
+            col: Math.floor(this.BOARD_WIDTH / 2)
+        };
+        
+        const startX = this.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
+        const startY = this.playerGridPos.row * this.GRID_SIZE + this.GRID_SIZE / 2;
         
         this.player = this.add.sprite(startX, startY, 'human_down');
         this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
         
-        this.physics.add.existing(this.player);
-        this.player.body.setSize(this.PLAYER_SIZE, this.PLAYER_SIZE);
-        
         this.playerDirection = 'down';
-        this.playerGridPos = {
-            row: Math.floor(this.BOARD_HEIGHT / 2),
-            col: Math.floor(this.BOARD_WIDTH / 2)
-        }
-        
-        console.log('Player created at:', startX, startY);
+        this.targetPosition = { x: startX, y: startY };
     }
 
     update(time, delta) {
-        this._handlePlayerInput(delta);
+        this._handlePlayerInput();
+        this._updatePlayerMovement(delta);
         this._handleWalkingAnimation(delta);
     }
 
-    _handleWalkingAnimation(time) {
+    _handlePlayerInput() {
+        // Only process input if not currently moving
+        if (this.isMoving) return;
+
+        let newRow = this.playerGridPos.row;
+        let newCol = this.playerGridPos.col;
+        let direction = null;
+
+        if (this.cursors.left.isDown) {
+            newCol--;
+            direction = 'left';
+        } else if (this.cursors.right.isDown) {
+            newCol++;
+            direction = 'right';
+        } else if (this.cursors.up.isDown) {
+            newRow--;
+            direction = 'up';
+        } else if (this.cursors.down.isDown) {
+            newRow++;
+            direction = 'down';
+        }
+
+        // If no direction pressed or invalid move, return
+        if (!direction || !this._isValidMove(this.playerGridPos.row, this.playerGridPos.col, newRow, newCol)) {
+            return;
+        }
+
+        // Update direction and start movement
+        this._changePlayerDirection(direction);
+        this._startMovement(newRow, newCol);
+    }
+
+    _isValidMove(fromRow, fromCol, toRow, toCol) {
+        // Check if target is within grid bounds
+        if (toRow < 0 || toRow >= this.BOARD_HEIGHT || 
+            toCol < 0 || toCol >= this.BOARD_WIDTH) {
+            return false;
+        }
+
+        // Use WallManager to check if movement is allowed
+        return this.wallManager.canMoveFromTo(fromRow, fromCol, toRow, toCol);
+    }
+
+    _startMovement(targetRow, targetCol) {
+        this.isMoving = true;
+        this.playerGridPos.row = targetRow;
+        this.playerGridPos.col = targetCol;
+        
+        // Calculate target pixel position (center of target cell)
+        this.targetPosition = {
+            x: targetCol * this.GRID_SIZE + this.GRID_SIZE / 2,
+            y: targetRow * this.GRID_SIZE + this.GRID_SIZE / 2
+        };
+    }
+
+    _updatePlayerMovement(delta) {
+        if (!this.isMoving) return;
+
+        const speed = this.moveSpeed * (delta / 1000);
+        const dx = this.targetPosition.x - this.player.x;
+        const dy = this.targetPosition.y - this.player.y;
+        
+        // Calculate distance to target
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance <= speed) {
+            // Snap to target position
+            this.player.x = this.targetPosition.x;
+            this.player.y = this.targetPosition.y;
+            this.isMoving = false;
+        } else {
+            // Move toward target
+            const ratio = speed / distance;
+            this.player.x += dx * ratio;
+            this.player.y += dy * ratio;
+        }
+    }
+
+    _handleWalkingAnimation(delta) {
         if (this.isMoving) {
-            this.animationTimer += time;
+            this.animationTimer += delta;
             if (this.animationTimer >= this.animationSpeed) {
                 this.animationTimer = 0;
                 this.currentFrame = (this.currentFrame % 6) + 1;
@@ -119,162 +192,6 @@ export default class GameScene extends Phaser.Scene {
                 this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
             }
         }
-    }
-
-    _handlePlayerInput(delta) {
-        const speed = 300;
-        
-        // Check if any input is pressed - FIX #3
-        const hasInput = this.cursors.left.isDown || this.cursors.right.isDown || 
-                         this.cursors.up.isDown || this.cursors.down.isDown;
-        
-        if (!hasInput) {
-            this.player.body.setVelocity(0);
-            this.isMoving = false;
-            return;
-        }
-        
-        // Store current position
-        const oldX = this.player.x;
-        const oldY = this.player.y;
-        
-        // Reset velocity
-        this.player.body.setVelocity(0);
-        
-        let velocityX = 0;
-        let velocityY = 0;
-        let direction = null;
-
-        // Check input and set desired velocity
-        if (this.cursors.left.isDown) {
-            velocityX = -speed;
-            direction = 'left';
-        } else if (this.cursors.right.isDown) {
-            velocityX = speed;
-            direction = 'right';
-        }
-
-        if (this.cursors.up.isDown) {
-            velocityY = -speed;
-            direction = 'up';
-        } else if (this.cursors.down.isDown) {
-            velocityY = speed;
-            direction = 'down';
-        }
-
-        // Calculate potential new positions
-        const moveDistance = speed * (delta / 1000);
-        const testX = oldX + (velocityX !== 0 ? (velocityX > 0 ? moveDistance : -moveDistance) : 0);
-        const testY = oldY + (velocityY !== 0 ? (velocityY > 0 ? moveDistance : -moveDistance) : 0);
-
-        let moved = false;
-
-        // Try diagonal movement first (both X and Y)
-        if (velocityX !== 0 && velocityY !== 0) {
-            if (this._checkWallCollision(testX, testY)) {
-                this.player.body.setVelocity(velocityX, velocityY);
-                moved = true;
-            }
-        }
-
-        // If diagonal failed or only one direction pressed, try each axis independently from CURRENT position - FIX #2
-        if (!moved) {
-            if (velocityX !== 0 && this._checkWallCollision(testX, oldY)) {
-                this.player.body.setVelocityX(velocityX);
-                moved = true;
-            }
-            
-            if (velocityY !== 0 && this._checkWallCollision(oldX, testY)) {
-                this.player.body.setVelocityY(velocityY);
-                moved = true;
-            }
-        }
-        
-        this.isMoving = moved;
-        
-        if (moved && direction) {
-            this._changePlayerDirection(direction);
-        }
-    }
-
-    _checkWallCollision(x, y) {
-        // Get player bounds at the new position
-        const halfSize = this.PLAYER_SIZE / 2;
-        const playerLeft = x - halfSize;
-        const playerRight = x + halfSize;
-        const playerTop = y - halfSize;
-        const playerBottom = y + halfSize;
-
-        // Check board boundaries first
-        if (playerLeft < 0 || playerRight > this.BOARD_WIDTH * this.GRID_SIZE ||
-            playerTop < 0 || playerBottom > this.BOARD_HEIGHT * this.GRID_SIZE) {
-            return false;
-        }
-
-        // Add small margin for floating point comparison
-        const margin = 0.5;
-
-        // Determine which cells the player overlaps
-        const minCol = Math.max(0, Math.floor(playerLeft / this.GRID_SIZE));
-        const maxCol = Math.min(this.BOARD_WIDTH - 1, Math.floor((playerRight - margin) / this.GRID_SIZE));
-        const minRow = Math.max(0, Math.floor(playerTop / this.GRID_SIZE));
-        const maxRow = Math.min(this.BOARD_HEIGHT - 1, Math.floor((playerBottom - margin) / this.GRID_SIZE));
-
-        // Check walls in all overlapping cells - FIX #1
-        for (let row = minRow; row <= maxRow; row++) {
-            for (let col = minCol; col <= maxCol; col++) {
-                const walls = this.grid[row][col].walls;
-                
-                // Calculate cell boundaries (walls are ON these lines)
-                const cellLeft = col * this.GRID_SIZE;
-                const cellRight = (col + 1) * this.GRID_SIZE;
-                const cellTop = row * this.GRID_SIZE;
-                const cellBottom = (row + 1) * this.GRID_SIZE;
-
-                // Check collision with each wall (walls are line segments)
-                // Top wall - horizontal line at cellTop
-                if (walls[0]) {
-                    // Player crosses this horizontal wall if player spans across cellTop vertically
-                    // AND overlaps the wall horizontally
-                    if (playerTop <= cellTop + margin && playerBottom >= cellTop - margin &&
-                        playerRight > cellLeft + margin && playerLeft < cellRight - margin) {
-                        return false;
-                    }
-                }
-
-                // Right wall - vertical line at cellRight
-                if (walls[1]) {
-                    // Player crosses this vertical wall if player spans across cellRight horizontally
-                    // AND overlaps the wall vertically
-                    if (playerLeft <= cellRight + margin && playerRight >= cellRight - margin &&
-                        playerBottom > cellTop + margin && playerTop < cellBottom - margin) {
-                        return false;
-                    }
-                }
-
-                // Bottom wall - horizontal line at cellBottom
-                if (walls[2]) {
-                    // Player crosses this horizontal wall if player spans across cellBottom vertically
-                    // AND overlaps the wall horizontally
-                    if (playerTop <= cellBottom + margin && playerBottom >= cellBottom - margin &&
-                        playerRight > cellLeft + margin && playerLeft < cellRight - margin) {
-                        return false;
-                    }
-                }
-
-                // Left wall - vertical line at cellLeft
-                if (walls[3]) {
-                    // Player crosses this vertical wall if player spans across cellLeft horizontally
-                    // AND overlaps the wall vertically
-                    if (playerLeft <= cellLeft + margin && playerRight >= cellLeft - margin &&
-                        playerBottom > cellTop + margin && playerTop < cellBottom - margin) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
     }
 
     _changePlayerDirection(direction) {
