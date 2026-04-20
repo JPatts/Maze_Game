@@ -31,21 +31,27 @@ export default class GameScene extends Phaser.Scene {
         this.animationSpeed = 90;
     }
 
+    /**
+     * Preloads all assets needed for the game scene before it starts.
+     * @returns {void}
+     */
     preload() {
         this.load.image('background', '/assets/Board/grass_patch_1.png');
         
-        // Load all human walking frames
         for (let i = 1; i <= 6; i++) {
             this.load.image(`human_frame_${i}`, `/assets/Human/human_${i}.png`);
         }
        
-        // Load directional resting images
         this.load.image('human_down', '/assets/Human/human_1.png'); 
         this.load.image('human_up', '/assets/Human/human_3.png');
         this.load.image('human_left', '/assets/Human/human_2.png');
         this.load.image('human_right', '/assets/Human/human_1.png');
     }
 
+    /**
+     * Creates and initializes all game objects when the scene starts.
+     * @returns {void}
+     */
     create() {
         this._generateMaze();
         this._createBoard();
@@ -54,12 +60,20 @@ export default class GameScene extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
     }
 
+    /**
+     * Instantiates the MazeGenerator and WallManager and generates the grid.
+     * @returns {void}
+     */
     _generateMaze() {
         this.mazeGenerator = new MazeGenerator(this.BOARD_HEIGHT, this.BOARD_WIDTH, this.GRID_SIZE);
         this.grid = this.mazeGenerator.generateMaze(0, 0);
         this.wallManager = new WallManager(this, this.grid, this.GRID_SIZE);
     }
 
+    /**
+     * Tiles background images across every cell of the board.
+     * @returns {void}
+     */
     _createBoard() {
         for (let row = 0; row < this.BOARD_HEIGHT; row++) {
             for (let col = 0; col < this.BOARD_WIDTH; col++) {
@@ -71,10 +85,17 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    /**
+     * Delegates wall rendering to the WallManager.
+     * @returns {void}
+     */
     _createWalls() {
         this.wallManager.createWalls();
     }
 
+    /**
+     * Places the player on the grid and sets their initial direction.
+     */
     _initializePlayer() {
         // Start player in the middle of the grid
         this.playerGridPos = {
@@ -92,12 +113,22 @@ export default class GameScene extends Phaser.Scene {
         this.targetPosition = { x: startX, y: startY };
     }
 
+    /**
+     * Main game loop called every frame by Phase.
+     * @param {*} time - Total elapsed time in milliseconds.
+     * @param {*} delta - Time in milliseconds since the last frame.
+     * @returns {void}
+     */
     update(time, delta) {
         this._handlePlayerInput();
         this._updatePlayerMovement(delta);
         this._handleWalkingAnimation(delta);
     }
 
+    /**
+     * Reads arrow key input and initiates player movement if the target cell is valid.
+     * @returns {void}
+     */
     _handlePlayerInput() {
         // Only process input if not currently moving
         if (this.isMoving) return;
@@ -130,6 +161,14 @@ export default class GameScene extends Phaser.Scene {
         this._startMovement(newRow, newCol);
     }
 
+    /**
+     * Checks whether a move between two cells is within bounds and not bloacked by a wall.
+     * @param {number} fromRow - Row index of the current cell. 
+     * @param {*} fromCol - Column index of the current cell.
+     * @param {*} toRow - Row index of the destination cell.
+     * @param {*} toCol - Column index of the destination cell.
+     * @returns {boolean} True if the move is allowed, false otherwise.
+     */
     _isValidMove(fromRow, fromCol, toRow, toCol) {
         // Check if target is within grid bounds
         if (toRow < 0 || toRow >= this.BOARD_HEIGHT || 
@@ -141,6 +180,12 @@ export default class GameScene extends Phaser.Scene {
         return this.wallManager.canMoveFromTo(fromRow, fromCol, toRow, toCol);
     }
 
+    /**
+     * Commits the palyer to moving toward a target grid cell and calculates the pixel destination.
+     * @param {number} targetRow - Row index of the destination cell.
+     * @param {number} targetCol - Column index of the destination cell.
+     * @returns {void}
+     */
     _startMovement(targetRow, targetCol) {
         this.isMoving = true;
         this.playerGridPos.row = targetRow;
@@ -153,6 +198,11 @@ export default class GameScene extends Phaser.Scene {
         };
     }
 
+    /**
+     * Smoothly moves the player sprite toward the target pixel position each frame.
+     * @param {*} delta - Time in milliseconds since the last frame.
+     * @returns {void}
+     */
     _updatePlayerMovement(delta) {
         if (!this.isMoving) return;
 
@@ -176,6 +226,11 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    /**
+     * Cycles through walking frames while the palyer is moving, or resets to a directional idle sprite when stopped.
+     * @param {*} delta - Time in milliseconds since last frame
+     * @returns {void}
+     */
     _handleWalkingAnimation(delta) {
         if (this.isMoving) {
             this.animationTimer += delta;
@@ -194,6 +249,11 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    /**
+     * Updates the player's facing direction and swaps the the matching idle sprite.
+     * @param {string} direction - Direction in which the player is now facing: 'up', 'down', 'left' or 'right'.
+     * @returns {void}
+     */
     _changePlayerDirection(direction) {
         if (this.playerDirection !== direction) {
             this.playerDirection = direction;

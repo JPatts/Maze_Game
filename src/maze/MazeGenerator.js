@@ -15,19 +15,23 @@ export default class MazeGenerator {
         ];
     }
 
+    /**
+     * Generates a maze using Depth-First-Search carving from a given starting cell.
+     * @param {number} startR - Starting row index.
+     * @param {number} startC - Starting column index. 
+     * @returns {Array} The completed 2D grid array with wall and background data per cell.
+     */
     generateMaze(startR, startC) {
-        // Initialize grid with all walls
         this._initializeGridWithWalls();
-        
-        // Fixed seed for reproducible mazes
         this._setRandomSeed(42);
-        
-        // Depth First Search maze carving
         this._carveMaze(startR, startC);
-        
         return this.grid;
     }
 
+    /**
+     * Initializes the grid with ever wall enabled and a default background on each cell.
+     * @returns {void}
+     */
     _initializeGridWithWalls() {
         this.grid = [];
         for (let r = 0; r < this.rows; r++) {
@@ -42,6 +46,12 @@ export default class MazeGenerator {
         }
     }
 
+    /**
+     * Carves a maze through the grid using iterative DFS from starting cell.
+     * @param {number} startR - Starting row index for the carve. 
+     * @param {number} startC - Starting column index for the carve. 
+     * @returns {void}
+     */
     _carveMaze(startR, startC) {
         const stack = [[startR, startC]];
         const visited = new Set();
@@ -76,10 +86,21 @@ export default class MazeGenerator {
         }
     }
 
+    /**
+     * Checks whether a given row and column are within the grid bounds.
+     * @param {number} r - Row index to check.
+     * @param {number} c - Column index to check.
+     * @returns {boolean} True if the position is within bounds, false otherwise.
+     */ 
     _inBounds(r, c) {
         return r >= 0 && r < this.rows && c >= 0 && c < this.cols;
     }
 
+    /**
+     * Shuffles an array in place using the Fisher-Yates algorithm with the seeded RNG.
+     * @param {Array} array - The array to shuffle. 
+     * @returns {Array} The shuffled array.
+     */
     _shuffleArray(array) {
         // Fisher-Yates shuffle with fixed seed
         for (let i = array.length - 1; i > 0; i--) {
@@ -89,16 +110,31 @@ export default class MazeGenerator {
         return array;
     }
 
+    /**
+     * Sets the seed value for the seeded random number generator.
+     * @param {number} seed - The seed value to initialize the RNG with.
+     * @returns {void}
+     */
     _setRandomSeed(seed) {
         this._seed = seed;
     }
 
+    /**
+     * Prodcues the next pseudo-randomg number using linear congruential generator.
+     * @returns {number} A psuedo-random float between 0 and 1.
+     */
     _seededRandom() {
         // Simple seeded random generator
         this._seed = (this._seed * 9301 + 49297) % 233280;
         return this._seed / 233280;
     }
 
+    /**
+     * Returns all grid neighbors reachable from a given cell based on its walls.
+     * @param {number} row - Row index of the source cell. 
+     * @param {*} col - Column index of the source cell.
+     * @returns {Array} Array of [row, col] pair for each reachable neighbor.
+     */
     getNeighbors(row, col) {
         const neighbors = [];
         const walls = this.grid[row][col].walls;

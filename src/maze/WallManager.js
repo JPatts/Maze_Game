@@ -8,8 +8,11 @@ export default class WallManager {
         this.wallGraphics = null;
     }
 
+    /**
+     * Creates the Phaser graphics object and draws all walls across the entire grid.
+     * @returns {void}
+     */
     createWalls() {
-        // Create graphics object for drawing walls
         this.wallGraphics = this.scene.add.graphics();
         this.wallGraphics.lineStyle(3, 0x000000, 1); // Black lines, 3px width
         
@@ -20,6 +23,11 @@ export default class WallManager {
         }
     }
 
+    /**
+     * Draws the walls present on a single grid cell.
+     * @param {number} row - Row index of the cell to draw. 
+     * @param {number} col - Column index of the cell to draw
+     */
     _drawCellWalls(row, col) {
         const x = col * this.gridSize;
         const y = row * this.gridSize;
@@ -46,8 +54,15 @@ export default class WallManager {
         this.wallGraphics.strokePath();
     }
 
+    /**
+     * Determines whether the movement between two adjacent cells is permitted by the wall layout.
+     * @param {number} fromRow - Row index of the source cell.
+     * @param {number} fromCol - Column index of the source cell. 
+     * @param {number} toRow - Row index of the destination cell.
+     * @param {number} toCol - Column index of the destination cell.
+     * @returns {boolean} True if movement is allowed, flase if blocked by a wall or non-adjacent.
+     */
     canMoveFromTo(fromRow, fromCol, toRow, toCol) {
-        // Check if movement between two adjacent cells is allowed
         const walls = this.grid[fromRow][fromCol].walls;
         
         if (toRow === fromRow - 1 && toCol === fromCol) { // Moving up
@@ -66,8 +81,13 @@ export default class WallManager {
         return false; // Not adjacent cells
     }
 
+    /**
+     * Converts pixel coordinates to the corresponding grid cell position.
+     * @param {number} x - Pixel x coordinate. 
+     * @param {*} y - Pixel y coordinate.
+     * @returns {{row: number, col: number}} The grid row and column for the given pixel position.
+     */
     getCellFromPixel(x, y) {
-        // Convert pixel coordinates to grid coordinates
         const col = Math.floor(x / this.gridSize);
         const row = Math.floor(y / this.gridSize);
         return { row, col };
