@@ -3,7 +3,12 @@ import MazeGenerator from "../maze/MazeGenerator";
 import WallManager from "../maze/WallManager";
 
 export default class Player {
-    constructor(scence, gridSize, playerSize, wallManager) {
+    constructor(scene, gridSize, playerSize, wallManager) {
+        this.scene = scene;
+        this.GRID_SIZE = gridSize;
+        this.PLAYER_SIZE = playerSize;
+        this.wallManager = wallManager;
+
          // Grid-based movement
         this.isMoving = false;
         this.moveSpeed = 450; // pixels per second
@@ -31,14 +36,14 @@ export default class Player {
         const startX = this.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
         const startY = this.playerGridPos.row * this.GRID_SIZE + this.GRID_SIZE / 2;
         
-        this.player = this.add.sprite(startX, startY, 'human_down');
+        this.player = this.scene.add.sprite(startX, startY, 'human_down');
         this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
         
         this.playerDirection = 'down';
         this.targetPosition = { x: startX, y: startY };
     }
 
-        /**
+    /**
      * Reads arrow key input and initiates player movement if the target cell is valid.
      * @returns {void}
      */
@@ -65,7 +70,12 @@ export default class Player {
         }
 
         // If no direction pressed or invalid move, return
-        if (!direction || !this._isValidMove(this.playerGridPos.row, this.playerGridPos.col, newRow, newCol)) {
+        if (!direction || !this._isValidMove(
+            this.playerGridPos.row, 
+            this.playerGridPos.col, 
+            newRow, 
+            newCol)) 
+            {
             return;
         }
 
