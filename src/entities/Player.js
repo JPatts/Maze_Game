@@ -70,7 +70,7 @@ export default class Player {
         }
 
         // If no direction pressed or invalid move, return
-        if (!direction || !this._isValidMove(
+        if (!direction|| !this.scene._isValidMove(
             this.playerGridPos.row, 
             this.playerGridPos.col, 
             newRow, 

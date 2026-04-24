@@ -50,14 +50,6 @@ export default class GameScene extends Phaser.Scene {
         this.playerEntity._initializePlayer();
         this.cursors = this.input.keyboard.createCursorKeys();
         this.playerEntity.cursors = this.cursors;
-
-        /**
-        this._generateMaze();
-        this._createBoard();
-        this._createWalls();
-        this._initializePlayer();
-        this.cursors = this.input.keyboard.createCursorKeys();
-        */
     }
 
     /**
