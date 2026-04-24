@@ -23,8 +23,9 @@ export default class MazeGenerator {
      */
     generateMaze(startR, startC) {
         this._initializeGridWithWalls();
-        this._setRandomSeed(42);
+        this._setRandomSeed(69);
         this._carveMaze(startR, startC);
+        this._addLoops(0.20);
         return this.grid;
     }
 
@@ -146,5 +147,38 @@ export default class MazeGenerator {
         if (col > 0 && !walls[3]) neighbors.push([row, col - 1]);     // Left
 
         return neighbors;
+    }
+
+    /**
+     * Removes a random percentage of internal walls to create loops, adding variety.
+     * Only walls that are still standing and seperate two visited cells are considered.
+     * @param {number} percentage - Fraction (0-1) of eligible walls to remove.
+     */
+    _addLoops(percentage) {
+        // Collect all walls that could be removed to form a loop.
+        const candidates = [];
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                // Check right neighbor 
+                if ( c < this.cols - 1 && this.grid[r][c].walls[1]) {
+                    candidates.push({ r, c, dir: 1, nr: r, nc: c + 1, oppDir: 3});
+                }
+                // Check down neighbor 
+                if (r < this.rows - 1 && this.grid[r][c].walls[2]) {
+                    candidates.push({ r, c, dir: 2, nr: r + 1, nc: c, oppDir: 0})
+                }
+
+            }
+        }
+
+        // Shuffle candidates and remove percentage
+        const toRemove = Math.floor(candidates.length * percentage);
+        const shuffled = this._shuffleArray(candidates);
+
+        for (let i = 0; i < toRemove; i++) {
+            const { r, c, dir, nr, nc, oppDir} = shuffled[i];
+            this.grid[r][c].walls[dir] = false;
+            this.grid[nr][nc].walls[oppDir] = false;
+        }
     }
 }
