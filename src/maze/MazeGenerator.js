@@ -29,7 +29,7 @@ export default class MazeGenerator {
     }
 
     /**
-     * Initializes the grid with ever wall enabled and a default background on each cell.
+     * Initializes the grid with every wall enabled and a default background on each cell.
      * @returns {void}
      */
     _initializeGridWithWalls() {

@@ -21,7 +21,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Grid-based movement
         this.isMoving = false;
-        this.moveSpeed = 300; // pixels per second
+        this.moveSpeed = 450; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
         
@@ -99,8 +99,10 @@ export default class GameScene extends Phaser.Scene {
     _initializePlayer() {
         // Start player in the middle of the grid
         this.playerGridPos = {
-            row: Math.floor(this.BOARD_HEIGHT / 2),
-            col: Math.floor(this.BOARD_WIDTH / 2)
+            row: 7,
+            col: 0
+            // row: Math.floor(this.BOARD_HEIGHT / 2),
+            // col: Math.floor(this.BOARD_WIDTH / 2)
         };
         
         const startX = this.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
