@@ -51,6 +51,11 @@ export default class Zombie {
         // if not moving
         if (!this.isMoving) {
             this._recalculatePath(playerGridPos);
+
+            if (this.currentPath.length > 1) {
+                const nextStep = this.currentPath[1]; 
+                this._startMovement(nextStep.row, nextStep.col);
+            }
         }
 
         this._updateMovement(delta);
@@ -73,12 +78,12 @@ export default class Zombie {
         }
 
         // A* open list (prioritized by fCost) and closed set
-        const openlist = [];
+        const openList = [];
         const closedSet = new Set();
         const gCost = {}; // Cost from start to given 
         const parent = {}; // For reconstructing the path
 
-        const startKey = '${start.row},${start.col}'
+        const startKey = `${start.row},${start.col}`;
         gCost[startKey] = 0;
         openList.push({
             row: start.row,
@@ -90,7 +95,7 @@ export default class Zombie {
 
         while (openList.length > 0) {
             // Sort by fCost (ascending) and take the best node
-            openList.sort((a,b) => a.fCost = b.fCost);
+            openList.sort((a,b) => a.fCost - b.fCost);
             const current = openList.shift();
             const currentKey = `${current.row},${current.col}`;
 

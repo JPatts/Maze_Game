@@ -54,7 +54,8 @@ export default class GameScene extends Phaser.Scene {
 
         // key images
         for (let i = 1; i <= 24; i++) {
-            this.load.image(`key_${i}`, `/assets/Key/key_${i}.png`);
+            const padded = String(i).padStart(2, '0');
+            this.load.image(`key_${padded}`, `/assets/Key/key_${padded}.png`);
         }
 
         // door images
