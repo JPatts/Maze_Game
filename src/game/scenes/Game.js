@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import MazeGenerator from "../../maze/MazeGenerator";
 import WallManager from "../../maze/WallManager";
 import Player from "../../entities/Player"
+import Zombie from "../../entities/Zombie";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -26,16 +27,39 @@ export default class GameScene extends Phaser.Scene {
      * @returns {void}
      */
     preload() {
+        // background images
         this.load.image('background', '/assets/Board/grass_patch_1.png');
         
+        // human images
         for (let i = 1; i <= 6; i++) {
             this.load.image(`human_frame_${i}`, `/assets/Human/human_${i}.png`);
         }
        
         this.load.image('human_down', '/assets/Human/human_1.png'); 
-        this.load.image('human_up', '/assets/Human/human_3.png');
+        this.load.image('human_up', '/assets/Human/human_1.png');
         this.load.image('human_left', '/assets/Human/human_2.png');
         this.load.image('human_right', '/assets/Human/human_1.png');
+        this.load.image('human_dead', '/assets/Human/human_dead.png');
+        this.load.image('tombstone', '/assets/Human/tombstone.png');
+
+        // Zombie images
+        for (let i = 1; i <= 6; i++) {
+            this.load.image(`zombie_frame_${i}`, `/assets/Zombie/zombie_${i}.png`);
+        }
+       
+        this.load.image('zombie_down', '/assets/Zombie/zombie_1.png'); 
+        this.load.image('zombie_up', '/assets/Zombie/zombie_1.png');
+        this.load.image('zombie_left', '/assets/Zombie/zombie_2.png');
+        this.load.image('zombie_right', '/assets/Zombie/zombie_3.png');
+
+        // key images
+        for (let i = 1; i <= 24; i++) {
+            this.load.image(`key_${i}`, `/assets/Key/key_${i}.png`);
+        }
+
+        // door images
+        this.load.image('door_closed', `/assets/Dungeon_Door/door_closed.png`);
+        this.load.image('door_open', `/assets/Dungeon_Door/door_open.png`);
     }
 
     /**
@@ -46,10 +70,21 @@ export default class GameScene extends Phaser.Scene {
         this._generateMaze();
         this._createBoard();
         this._createWalls();
+
         this.playerEntity = new Player(this, this.GRID_SIZE, this.PLAYER_SIZE, this.wallManager);
         this.playerEntity._initializePlayer();
         this.cursors = this.input.keyboard.createCursorKeys();
         this.playerEntity.cursors = this.cursors;
+
+        // zombie setup
+        this.zombieEntity = new Zombie(
+            this,
+            this.GRID_SIZE,
+            this.PLAYER_SIZE,
+            this.wallManager,
+            this.mazeGenerator
+        );
+        this.zombieEntity.initializeZombie(7,14);
     }
 
     /**
@@ -95,6 +130,9 @@ export default class GameScene extends Phaser.Scene {
         this.playerEntity._handlePlayerInput();
         this.playerEntity._updatePlayerMovement(delta);
         this.playerEntity._handleWalkingAnimation(delta);
+
+        // Zombie 
+        this.zombieEntity.updateAI(delta, this.playerEntity.playerGridPos);
     }
 
     /**
