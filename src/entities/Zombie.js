@@ -10,14 +10,14 @@ export default class Zombie {
 
         // Grid-based movement
         this.isMoving = false;
-        this.moveSpeed = 450; // pixels per second
+        this.moveSpeed = 400; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
 
         // Animation
         this.currentFrame = 1;
         this.animationTimer = 0;
-        this.animationSpeed = 90; // if 120 moves slower than human
+        this.animationSpeed = 18; // if 120 moves slower than human
 
         // A* state
         this.currentPath = [];
@@ -115,7 +115,7 @@ export default class Zombie {
 
                 const tentativeG = (gCost[currentKey] || 0) + 1;
 
-                if (tentativeG < (gCost[neighborKey || Infinity])) {
+                if (tentativeG < (gCost[neighborKey] || Infinity)) {
                     gCost[neighborKey] = tentativeG;
                     parent[neighborKey] = { row: current.row, col: current.col };
                     const h = this._heuristic({ row: nRow, col: nCol }, goal);

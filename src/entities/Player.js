@@ -11,14 +11,14 @@ export default class Player {
 
          // Grid-based movement
         this.isMoving = false;
-        this.moveSpeed = 450; // pixels per second
+        this.moveSpeed = 500; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
         
         // Animation
         this.currentFrame = 1;
         this.animationTimer = 0;
-        this.animationSpeed = 90;
+        this.animationSpeed = 12;
     }
     
     /**

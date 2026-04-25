@@ -12,7 +12,7 @@ export default class GameScene extends Phaser.Scene {
         this.GRID_SIZE = 60;
         this.BOARD_WIDTH = 15;
         this.BOARD_HEIGHT = 15;
-        this.PLAYER_SIZE = this.GRID_SIZE - 20;
+        this.PLAYER_SIZE = this.GRID_SIZE - 10;
         
         // Game objects
         this.player = null;
