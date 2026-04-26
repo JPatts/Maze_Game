@@ -61,6 +61,10 @@ export default class GameScene extends Phaser.Scene {
         // door images
         this.load.image('door_closed', `/assets/Dungeon_Door/door_closed.png`);
         this.load.image('door_open', `/assets/Dungeon_Door/door_open.png`);
+
+        for (let i = 1; i <= 9; i++) {
+            this.load.image(`death_frame_${i}`, `/assets/Death_Animation/Zombie_eating_Human_0${i}.png`);
+        } 
     }
 
     /**
@@ -128,6 +132,14 @@ export default class GameScene extends Phaser.Scene {
      * @returns {void}
      */
     update(time, delta) {
+        // Game over check happens first
+        if ( !this.gameOver && 
+            this.zombieEntity.zombieGridPos.row === this.playerEntity.playerGridPos.row &&
+            this.zombieEntity.zombieGridPos.col === this.playerEntity.playerGridPos.col) {
+                this._triggerGameOver();
+                return;
+            }
+    
         this.playerEntity._handlePlayerInput();
         this.playerEntity._updatePlayerMovement(delta);
         this.playerEntity._handleWalkingAnimation(delta);
@@ -153,5 +165,77 @@ export default class GameScene extends Phaser.Scene {
 
         // Use WallManager to check if movement is allowed
         return this.wallManager.canMoveFromTo(fromRow, fromCol, toRow, toCol);
+    }
+
+    _triggerGameOver() {
+        this.gameOver = true;
+
+        // Disable all input
+        this.input.keyboard.enabled = false;
+
+        // Hide original sprites – keep them on screen if you want, but they'll be covered by the death animation
+        this.playerEntity.player.setVisible(false);
+        if (this.zombieEntity && this.zombieEntity.zombie) {
+            this.zombieEntity.zombie.setVisible(false);
+        }
+
+        // Position where the collision happened
+        const cellX = this.playerEntity.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
+        const cellY = this.playerEntity.playerGridPos.row * this.GRID_SIZE + this.GRID_SIZE / 2;
+
+        // Create the death animation sprite (starts with frame 1)
+        this.deathSprite = this.add.sprite(cellX, cellY, 'death_frame_1');
+        this.deathSprite.setDisplaySize(this.GRID_SIZE, this.GRID_SIZE);
+
+        // Manual frame cycling
+        let currentFrame = 1;
+        const totalFrames = 9;
+        this.time.addEvent({
+            delay: 100, // milliseconds per frame (adjust for desired speed)
+            repeat: totalFrames - 1,
+            callback: () => {
+                currentFrame++;
+                if (currentFrame <= totalFrames) {
+                    this.deathSprite.setTexture(`death_frame_${currentFrame}`);
+                }
+                if (currentFrame === totalFrames) {
+                    // Last frame – wait a bit then show game over text
+                    this.time.delayedCall(300, () => { // slight pause after last frame
+                        this.deathSprite.destroy();
+                        this._showGameOverText();
+                    });
+                }
+            }
+        });
+    }
+
+    _showGameOverText() {
+        const centerX = this.scale.width / 2;
+        const centerY = this.scale.height / 2;
+
+        // "GAME OVER" title
+        this.add.text(centerX, centerY - 40, 'GAME OVER', {
+            fontSize: '64px',
+            fontFamily: 'monospace',
+            color: '#ff0000',
+            stroke: '#000000',
+            strokeThickness: 6,
+            align: 'center'
+        }).setOrigin(0.5);
+
+        // Restart instruction
+        this.add.text(centerX, centerY + 20, 'Press SPACE to restart', {
+            fontSize: '24px',
+            fontFamily: 'monospace',
+            color: '#ffffff',
+            align: 'center'
+        }).setOrigin(0.5);
+
+        // Listen for the restart key
+        this.input.keyboard.once('keydown-SPACE', () => {
+            this.scene.restart();
+        });
+        // Alternative: use SPACE or ENTER
+        // this.input.keyboard.once('keydown-SPACE', () => { ... });
     }
 }
