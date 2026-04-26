@@ -72,6 +72,9 @@ export default class GameScene extends Phaser.Scene {
      * @returns {void}
      */
     create() {
+        this.gameOver = false;
+        this.gameOverTriggered = false;
+        
         this._generateMaze();
         this._createBoard();
         this._createWalls();
@@ -173,7 +176,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Player fades out – movement will be stopped by the flag in Player.update()
         this.tweens.add({
-            targets: this.player,
+            targets: this.playerEntity.player,
             alpha: 0,
             duration: 1000,
             onComplete: () => {
