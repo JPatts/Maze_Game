@@ -18,7 +18,7 @@ export default class Player {
         // Animation
         this.currentFrame = 1;
         this.animationTimer = 0;
-        this.animationSpeed = 12;
+        this.animationSpeed = 10;
     }
     
     /**
@@ -48,6 +48,9 @@ export default class Player {
      * @returns {void}
      */
     _handlePlayerInput() {
+        // stop movement if game is over
+        if (this.scene.gameOver) return;
+        
         // Only process input if not currently moving
         if (this.isMoving) return;
 

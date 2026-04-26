@@ -168,10 +168,20 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _triggerGameOver() {
-        this.gameOver = true;
+        if (this.gameOverTriggered) return;
+        this.gameOverTriggered = true;
 
-        // Disable all input
-        this.input.keyboard.enabled = false;
+        // Player fades out – movement will be stopped by the flag in Player.update()
+        this.tweens.add({
+            targets: this.player,
+            alpha: 0,
+            duration: 1000,
+            onComplete: () => {
+                this._showGameOverText();
+            }
+        });
+        /*
+        this.gameOver = true;
 
         // Hide original sprites – keep them on screen if you want, but they'll be covered by the death animation
         this.playerEntity.player.setVisible(false);
@@ -207,6 +217,7 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         });
+        **/
     }
 
     _showGameOverText() {
@@ -231,11 +242,9 @@ export default class GameScene extends Phaser.Scene {
             align: 'center'
         }).setOrigin(0.5);
 
-        // Listen for the restart key
+        // Listen for the restart key - Space bar
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.restart();
         });
-        // Alternative: use SPACE or ENTER
-        // this.input.keyboard.once('keydown-SPACE', () => { ... });
     }
 }
