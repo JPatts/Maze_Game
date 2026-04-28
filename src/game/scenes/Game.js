@@ -93,6 +93,8 @@ export default class GameScene extends Phaser.Scene {
             this.mazeGenerator
         );
         this.zombieEntity.initializeZombie(0,14);
+
+        this.createSidePanel();
     }
 
     /**
@@ -244,5 +246,44 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.restart();
         });
+    }
+
+    createSidePanel() {
+        const panelX = 910;
+        const panelWidth = this.scale.width - panelX;
+        const panelHeight = this.scale.height;
+
+        // 1. A semi transparent background so the panel stands out
+        this.add.rectangle(panelX + panelWidth / 2, panelHeight / 2, panelWidth, panelHeight, 0x222222, 0.9).setOrigin(0.5).setDepth(10);
+        
+        // 2. Instructions text
+        this.instructionsText = this.add.text(panelX + 10, 30,
+            [
+                'HOW TO PLAY',
+                '',
+                'Use Arrow keys to move ←↑→↓',
+                'Get the keys to unlock the door',
+                'Reach the door to escape',
+                '',
+            ].join('\n'),
+            {
+                fontSize: '14px',
+                fontFamily: 'monospace',
+                color: '#ffffff',
+                lineSpacing: 6
+            }
+        ).setDepth(11);
+
+        // 3. Ticker for how many times the zombie has won
+        this.zombieWins = 0;   // reset each session, or load from localStorage
+        this.tickerText = this.add.text(panelX + 10, 250,
+            `Zombie wins: ${this.zombieWins}`,
+            {
+                fontSize: '20px',
+                fontFamily: 'monospace',
+                color: '#ff6666',
+                fontStyle: 'bold'
+            }
+        ).setDepth(11);
     }
 }

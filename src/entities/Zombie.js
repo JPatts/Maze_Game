@@ -29,7 +29,7 @@ export default class Zombie {
      * @param {number} row - Starting row.
      * @param {number} col - Starting col.
      */
-    initializeZombie(row = 4, col = 5) {
+    initializeZombie(row, col) {
         this.zombieGridPos = {row, col}
         
         const startX = col * this.GRID_SIZE + this.GRID_SIZE / 2;

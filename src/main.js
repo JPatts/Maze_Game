@@ -7,7 +7,7 @@ console.log('GameScene', GameScene);
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container', 
-    width: 900,
+    width: 1200,
     height: 900,
     scene: [GameScene],
     physics: {
@@ -18,7 +18,7 @@ const config = {
         }
     }
 };
-
+  
 const game = new Phaser.Game(config);
 console.log('Game instance created:', game);
 
