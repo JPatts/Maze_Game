@@ -27,7 +27,7 @@ export default class Player {
     _initializePlayer() {
         // Start player in the middle of the grid
         this.playerGridPos = {
-            row: 7,
+            row: 14,
             col: 0
             // row: Math.floor(this.BOARD_HEIGHT / 2),
             // col: Math.floor(this.BOARD_WIDTH / 2)

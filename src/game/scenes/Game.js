@@ -92,7 +92,7 @@ export default class GameScene extends Phaser.Scene {
             this.wallManager,
             this.mazeGenerator
         );
-        this.zombieEntity.initializeZombie(7,14);
+        this.zombieEntity.initializeZombie(0,14);
     }
 
     /**
