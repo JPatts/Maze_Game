@@ -173,38 +173,34 @@ export default class GameScene extends Phaser.Scene {
     _triggerGameOver() {
         if (this.gameOverTriggered) return;
         this.gameOverTriggered = true;
-
-        // Player fades out – movement will be stopped by the flag in Player.update()
-        this.tweens.add({
-            targets: this.playerEntity.player,
-            alpha: 0,
-            duration: 1000,
-            onComplete: () => {
-                this._showGameOverText();
-            }
-        });
-        /*
         this.gameOver = true;
 
-        // Hide original sprites – keep them on screen if you want, but they'll be covered by the death animation
+        if (this.zombieEntity && this.zombieEntity.zombie) {
+            const playerX = this.playerEntity.player.x;
+            const playerY = this.playerEntity.player.y;
+            this.zombieEntity.zombie.x = playerX;
+            this.zombieEntity.zombie.y = playerY;
+        }
+
+        // Hide the original sprites (to be replaced by death animation)
         this.playerEntity.player.setVisible(false);
         if (this.zombieEntity && this.zombieEntity.zombie) {
             this.zombieEntity.zombie.setVisible(false);
         }
 
-        // Position where the collision happened
+        // position of the collision ( the player's cell)
         const cellX = this.playerEntity.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
         const cellY = this.playerEntity.playerGridPos.row * this.GRID_SIZE + this.GRID_SIZE / 2;
 
-        // Create the death animation sprite (starts with frame 1)
+        // create death animation
         this.deathSprite = this.add.sprite(cellX, cellY, 'death_frame_1');
         this.deathSprite.setDisplaySize(this.GRID_SIZE, this.GRID_SIZE);
 
-        // Manual frame cycling
+        // cycle through death animation frames
         let currentFrame = 1;
         const totalFrames = 9;
         this.time.addEvent({
-            delay: 100, // milliseconds per frame (adjust for desired speed)
+            delay: 100,
             repeat: totalFrames - 1,
             callback: () => {
                 currentFrame++;
@@ -212,15 +208,14 @@ export default class GameScene extends Phaser.Scene {
                     this.deathSprite.setTexture(`death_frame_${currentFrame}`);
                 }
                 if (currentFrame === totalFrames) {
-                    // Last frame – wait a bit then show game over text
-                    this.time.delayedCall(300, () => { // slight pause after last frame
+                    // After last frame of death animation, wait a moment before Game Over text
+                    this.time.delayedCall(300, () => {
                         this.deathSprite.destroy();
                         this._showGameOverText();
-                    });
+                    })
                 }
             }
-        });
-        **/
+        })
     }
 
     _showGameOverText() {
