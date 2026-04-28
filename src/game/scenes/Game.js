@@ -3,6 +3,7 @@ import MazeGenerator from "../../maze/MazeGenerator";
 import WallManager from "../../maze/WallManager";
 import Player from "../../entities/Player"
 import Zombie from "../../entities/Zombie";
+import Key from "../../entities/Key"; 
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -62,6 +63,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('door_closed', `/assets/Dungeon_Door/door_closed.png`);
         this.load.image('door_open', `/assets/Dungeon_Door/door_open.png`);
 
+        // Death Animation
         for (let i = 1; i <= 9; i++) {
             this.load.image(`death_frame_${i}`, `/assets/Death_Animation/Zombie_eating_Human_0${i}.png`);
         } 
@@ -93,6 +95,16 @@ export default class GameScene extends Phaser.Scene {
             this.mazeGenerator
         );
         this.zombieEntity.initializeZombie(0,14);
+
+        // Key placements
+        this.keys = [];
+        this.collectedKeys = 0;
+        
+        const keyPositions = [
+            { row: 0, col: 0}, // top left
+            { row: 14, col: 14}, // bottom right
+            { row: Math.floor(15 / 2), col: Math.floor(15 / 2)}, // middle  
+        ];
 
         this.createSidePanel();
     }
@@ -151,6 +163,22 @@ export default class GameScene extends Phaser.Scene {
 
         // Zombie 
         this.zombieEntity.updateAI(delta, this.playerEntity.playerGridPos);
+
+        for (const key of this.keys) {
+            // update spinning animation
+            key.update(time);
+
+            // check if player walked onto the key
+            if (key.isPlayerOnKey(this.playerEntity.playerGridPos)) {
+                key.collect();
+                this.collectedKeys++;
+
+                // update this side panel to show collected constructor
+                if (this.keyTickerText) {
+                    this.keyTickerText.setText(`Keys: ${this.collectedKeys}`);
+                }
+            }
+        }
     }
 
     /**
@@ -282,6 +310,16 @@ export default class GameScene extends Phaser.Scene {
                 fontSize: '20px',
                 fontFamily: 'monospace',
                 color: '#ff6666',
+                fontStyle: 'bold'
+            }
+        ).setDepth(11);
+
+        // 4. Show ticker for collected keys
+        this.keyTickerText = this.add.text(panelX + 10, 300, 'Keys: 0', 
+            {
+                fontSize: '20px',
+                fontFamily: 'monospace',
+                color: '#ffcc00',
                 fontStyle: 'bold'
             }
         ).setDepth(11);
