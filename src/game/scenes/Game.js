@@ -198,7 +198,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.door && this.door.canEnter(this.playerEntity.playerGridPos)) {
             if (!this.winTriggered) {
                 this.winTriggered = true;
-                this.ShowWinScreen();
+                this.showWinScreen();
             }
         }
     }
@@ -349,7 +349,7 @@ export default class GameScene extends Phaser.Scene {
 
     showWinScreen() {
         // Pause physics (optional but clean)
-        this.physics.pause();
+        // this.physics.pause();
 
         // Semi-transparent dark overlay
         const overlay = this.add.rectangle(
@@ -370,6 +370,8 @@ export default class GameScene extends Phaser.Scene {
                 strokeThickness: 6
             }
         ).setOrigin(0.5).setDepth(21);
+        
+        //this.zombieEntity.destroy();
 
         // Restart instruction
         this.add.text(
