@@ -4,6 +4,7 @@ import WallManager from "../../maze/WallManager";
 import Player from "../../entities/Player"
 import Zombie from "../../entities/Zombie";
 import Key from "../../entities/Key"; 
+import Door from "../../entities/Door"; 
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -111,6 +112,10 @@ export default class GameScene extends Phaser.Scene {
             this.keys.push(key);
         });
 
+        // create Door
+        this.door = new Door(this, 8, 14, this.GRID_SIZE);
+        this.winTriggered = false;
+
         this.createSidePanel();
     }
 
@@ -182,6 +187,18 @@ export default class GameScene extends Phaser.Scene {
                 if (this.keyTickerText) {
                     this.keyTickerText.setText(`Keys: ${this.collectedKeys}`);
                 }
+
+                // Open door when all keys are collected
+                if (this.collectedKeys >= 3) {
+                    this.door.open();
+                }
+            }
+        }
+
+        if (this.door && this.door.canEnter(this.playerEntity.playerGridPos)) {
+            if (!this.winTriggered) {
+                this.winTriggered = true;
+                this.ShowWinScreen();
             }
         }
     }
@@ -328,5 +345,45 @@ export default class GameScene extends Phaser.Scene {
                 fontStyle: 'bold'
             }
         ).setDepth(11);
+    }
+
+    showWinScreen() {
+        // Pause physics (optional but clean)
+        this.physics.pause();
+
+        // Semi-transparent dark overlay
+        const overlay = this.add.rectangle(
+            this.scale.width / 2, this.scale.height / 2,
+            this.scale.width, this.scale.height,
+            0x000000, 0.8
+        ).setDepth(20);
+
+        // Big "YOU WIN" text
+        this.add.text(
+            this.scale.width / 2, this.scale.height / 2 - 30,
+            'YOU WIN!', {
+                fontSize: '64px',
+                fontFamily: 'monospace',
+                color: '#409d1b',
+                fontStyle: 'bold',
+                stroke: '#000',
+                strokeThickness: 6
+            }
+        ).setOrigin(0.5).setDepth(21);
+
+        // Restart instruction
+        this.add.text(
+            this.scale.width / 2, this.scale.height / 2 + 50,
+            'Press SPACE to play again', {
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5).setDepth(21);
+
+        // Listen for restart on spacebar
+        this.input.keyboard.once('keydown-SPACE', () => {
+            this.scene.restart();
+        });
     }
 }
