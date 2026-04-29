@@ -161,6 +161,7 @@ export default class GameScene extends Phaser.Scene {
     update(time, delta) {
         // Game over check happens first
         if ( !this.gameOver && 
+            !this.winTriggered &&
             this.zombieEntity.zombieGridPos.row === this.playerEntity.playerGridPos.row &&
             this.zombieEntity.zombieGridPos.col === this.playerEntity.playerGridPos.col) {
                 this._triggerGameOver();
@@ -311,13 +312,20 @@ export default class GameScene extends Phaser.Scene {
             [
                 'HOW TO PLAY',
                 '',
-                'Use Arrow keys to move ←↑→↓',
-                'Get the keys to unlock the door',
-                'Reach the door to escape',
+                'Use Arrow keys to move',
+                '         ←↑→↓         ',
+                '',
+                'Get the keys ',
+                'to',
+                'unlock the door',
+                '',
+                'Reach the door',
+                'to',
+                'ESCAPE   ',
                 '',
             ].join('\n'),
             {
-                fontSize: '14px',
+                fontSize: '18px',
                 fontFamily: 'monospace',
                 color: '#ffffff',
                 lineSpacing: 6
@@ -326,7 +334,7 @@ export default class GameScene extends Phaser.Scene {
 
         // 3. Ticker for how many times the zombie has won
         this.zombieWins = 0;   // reset each session, or load from localStorage
-        this.tickerText = this.add.text(panelX + 10, 250,
+        this.tickerText = this.add.text(panelX + 10, 855,
             `Zombie wins: ${this.zombieWins}`,
             {
                 fontSize: '20px',
@@ -337,7 +345,7 @@ export default class GameScene extends Phaser.Scene {
         ).setDepth(11);
 
         // 4. Show ticker for collected keys
-        this.keyTickerText = this.add.text(panelX + 10, 300, 'Keys: 0', 
+        this.keyTickerText = this.add.text(panelX + 10, 800, 'Keys: 0', 
             {
                 fontSize: '20px',
                 fontFamily: 'monospace',
@@ -348,8 +356,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     showWinScreen() {
-        // Pause physics (optional but clean)
-        // this.physics.pause();
+        // Hide zombie 
+        if (this.zombieEntity && this.zombieEntity.zombie) {
+            this.zombieEntity.zombie.setVisible(false);
+        }
 
         // Semi-transparent dark overlay
         const overlay = this.add.rectangle(

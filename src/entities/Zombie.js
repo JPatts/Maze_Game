@@ -10,14 +10,14 @@ export default class Zombie {
 
         // Grid-based movement
         this.isMoving = false;
-        this.moveSpeed = 150; // pixels per second
+        this.moveSpeed = 320; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
 
         // Animation
         this.currentFrame = 1;
         this.animationTimer = 0;
-        this.animationSpeed = 2;
+        this.animationSpeed = 32;
 
         // A* state
         this.currentPath = [];

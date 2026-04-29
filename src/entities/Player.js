@@ -18,7 +18,7 @@ export default class Player {
         // Animation
         this.currentFrame = 1;
         this.animationTimer = 0;
-        this.animationSpeed = 10;
+        this.animationSpeed = 32;
     }
     
     /**
