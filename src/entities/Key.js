@@ -1,12 +1,10 @@
 import Phaser from "phaser";
-import MazeGenerator from "../maze/MazeGenerator";
-import WallManager from "../maze/WallManager";
 
 export default class Key {
-    constructor(scene, row, gridSize) {
+    constructor(scene, row, col, gridSize) {
         this.scene = scene;
         this.gridRow = row;
-        this.gridCol = Collision;
+        this.gridCol = col;
         this.gridSize = gridSize;
         this.collected = false;
 
@@ -56,5 +54,5 @@ export default class Key {
         this.collected = true;
         this.sprite.destroy();
     }
-    
+
 }

@@ -103,8 +103,13 @@ export default class GameScene extends Phaser.Scene {
         const keyPositions = [
             { row: 0, col: 0}, // top left
             { row: 14, col: 14}, // bottom right
-            { row: Math.floor(15 / 2), col: Math.floor(15 / 2)}, // middle  
+            { row: 7, col: 7}, // middle  
         ];
+
+        keyPositions.forEach(({ row, col}) => {
+            const key = new Key(this, row, col, this.GRID_SIZE);
+            this.keys.push(key);
+        });
 
         this.createSidePanel();
     }
