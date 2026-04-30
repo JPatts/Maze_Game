@@ -7,7 +7,7 @@ console.log('GameScene', GameScene);
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container', 
-    width: 1100,
+    width: 900,
     height: 900,
     scene: [GameScene],
     scale: {

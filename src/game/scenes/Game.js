@@ -117,7 +117,6 @@ export default class GameScene extends Phaser.Scene {
         this.door = new Door(this, 8, 14, this.GRID_SIZE);
         this.winTriggered = false;
 
-        this.createSidePanel();
         this.showWelcomeScreen();
     }
 
@@ -302,37 +301,6 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.restart();
         });
-    }
-
-    createSidePanel() {
-        const panelX = 910;
-        const panelWidth = this.scale.width - panelX;
-        const panelHeight = this.scale.height;
-
-        // 1. A semi transparent background so the panel stands out
-        this.add.rectangle(panelX + panelWidth / 2, panelHeight / 2, panelWidth, panelHeight, 0x222222, 0.9).setOrigin(0.5).setDepth(10);
-
-        // 3. Ticker for how many times the zombie has won
-        this.zombieWins = 0;   // reset each session, or load from localStorage
-        this.tickerText = this.add.text(panelX + 10, 855,
-            `Zombie wins: ${this.zombieWins}`,
-            {
-                fontSize: '20px',
-                fontFamily: 'monospace',
-                color: '#ff6666',
-                fontStyle: 'bold'
-            }
-        ).setDepth(11);
-
-        // 4. Show ticker for collected keys
-        this.keyTickerText = this.add.text(panelX + 10, 800, 'Keys: 0', 
-            {
-                fontSize: '20px',
-                fontFamily: 'monospace',
-                color: '#ffcc00',
-                fontStyle: 'bold'
-            }
-        ).setDepth(11);
     }
 
     showWinScreen() {
