@@ -17,7 +17,7 @@ const phasermsg = () => {
 }   
 
 export default defineConfig({
-    base: './',
+    base: '/Maze_Game/',
     logLevel: 'warn',
     build: {
         rollupOptions: {
