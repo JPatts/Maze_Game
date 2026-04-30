@@ -78,6 +78,13 @@ export default class GameScene extends Phaser.Scene {
         this.gameOver = false;
         this.gameOverTriggered = false;
         this.welcomeActive = true;
+       
+        // hide html key counter
+        const htmlCounter = document.getElementById('key-counter');
+        if (htmlCounter) {
+            htmlCounter.style.display = 'none';
+            htmlCounter.textContent = 'Keys: 0'; // reset count
+        }
         
         this._generateMaze();
         this._createBoard();
@@ -115,8 +122,8 @@ export default class GameScene extends Phaser.Scene {
 
         // create Door
         this.door = new Door(this, 8, 14, this.GRID_SIZE);
-        this.winTriggered = false;
 
+        this.winTriggered = false;
         this.showWelcomeScreen();
     }
 
@@ -188,9 +195,10 @@ export default class GameScene extends Phaser.Scene {
                 key.collect();
                 this.collectedKeys++;
 
-                // update this side panel to show collected constructor
-                if (this.keyTickerText) {
-                    this.keyTickerText.setText(`Keys: ${this.collectedKeys}`);
+                // Also update the HTML element
+                const htmlCounter = document.getElementById('key-counter');
+                if (htmlCounter) {
+                    htmlCounter.textContent = `Keys: ${this.collectedKeys}`;
                 }
 
                 // Open door when all keys are collected
@@ -427,6 +435,13 @@ export default class GameScene extends Phaser.Scene {
                 this.welcomeTexts.forEach(text => text.destroy());
                 this.welcomeTexts = [];
             }
+
+            // Show HTML counter
+            const htmlCounter = document.getElementById('key-counter');
+            if (htmlCounter) {
+                htmlCounter.style.display = 'block';
+            }
+            
             // Finally, start the game
             this.welcomeActive = false;
         });
