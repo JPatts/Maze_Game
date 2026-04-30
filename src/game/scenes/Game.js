@@ -77,6 +77,7 @@ export default class GameScene extends Phaser.Scene {
     create() {
         this.gameOver = false;
         this.gameOverTriggered = false;
+        this.welcomeActive = true;
         
         this._generateMaze();
         this._createBoard();
@@ -117,6 +118,7 @@ export default class GameScene extends Phaser.Scene {
         this.winTriggered = false;
 
         this.createSidePanel();
+        this.showWelcomeScreen();
     }
 
     /**
@@ -159,6 +161,9 @@ export default class GameScene extends Phaser.Scene {
      * @returns {void}
      */
     update(time, delta) {
+        if (this.welcomeActive) {
+            return;
+        }
         // Game over check happens first
         if ( !this.gameOver && 
             !this.winTriggered &&
@@ -306,31 +311,6 @@ export default class GameScene extends Phaser.Scene {
 
         // 1. A semi transparent background so the panel stands out
         this.add.rectangle(panelX + panelWidth / 2, panelHeight / 2, panelWidth, panelHeight, 0x222222, 0.9).setOrigin(0.5).setDepth(10);
-        
-        // 2. Instructions text
-        this.instructionsText = this.add.text(panelX + 10, 30,
-            [
-                'HOW TO PLAY',
-                '',
-                'Use Arrow keys to move',
-                '         ←↑→↓         ',
-                '',
-                'Get the keys ',
-                'to',
-                'unlock the door',
-                '',
-                'Reach the door',
-                'to',
-                'ESCAPE   ',
-                '',
-            ].join('\n'),
-            {
-                fontSize: '18px',
-                fontFamily: 'monospace',
-                color: '#ffffff',
-                lineSpacing: 6
-            }
-        ).setDepth(11);
 
         // 3. Ticker for how many times the zombie has won
         this.zombieWins = 0;   // reset each session, or load from localStorage
@@ -396,6 +376,91 @@ export default class GameScene extends Phaser.Scene {
         // Listen for restart on spacebar
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.restart();
+        });
+    }
+
+    showWelcomeScreen() {
+        // Semi-transparent dark overlay
+        this.welcomeOverlay = this.add.rectangle(
+            this.scale.width / 2,
+            this.scale.height / 2,
+            this.scale.width,
+            this.scale.height,
+            0x000000,
+            0.8
+        ).setDepth(10);
+
+        // Array to store all text elements for easy cleanup
+        this.welcomeTexts = [];
+
+        // Title
+        this.welcomeTexts.push(
+            this.add.text(
+                this.scale.width / 2,
+                this.scale.height / 2 - 280,
+                'MAZE GAME',
+                {
+                    fontSize: '84px',
+                    fontFamily: 'monospace',
+                    color: '#409d1b',
+                    fontStyle: 'bold',
+                    stroke: '#000',
+                    strokeThickness: 6
+                }
+            ).setOrigin(0.5).setDepth(11)
+        );
+
+        // Instructions
+        const instructions = [
+            'Use the arrow keys to move',
+            'Collect all keys to unlock the door',
+            'Reach the door to escape',
+            'Avoid the zombie!',
+        ].join('\n');
+
+        this.welcomeTexts.push(
+            this.add.text(
+                this.scale.width / 2,
+                this.scale.height / 2,
+                instructions,
+                {
+                    fontSize: '24px',
+                    fontFamily: 'monospace',
+                    color: '#ffffff',
+                    align: 'center',
+                    lineSpacing: 16,
+                }
+            ).setOrigin(0.5).setDepth(11)
+        );
+
+        // Start prompt
+        this.welcomeTexts.push(
+            this.add.text(
+                this.scale.width / 2,
+                this.scale.height - 80,
+                'Press SPACE to start',
+                {
+                    fontSize: '36px',
+                    fontFamily: 'monospace',
+                    color: '#ffffff'
+                }
+            ).setOrigin(0.5).setDepth(11)
+        );
+
+        // Listen for SPACE once, then remove the welcome screen
+        this.input.keyboard.once('keydown-SPACE', () => {
+            // Destroy the overlay
+            if (this.welcomeOverlay) {
+                this.welcomeOverlay.destroy();
+                this.welcomeOverlay = null;
+            }
+            // Destroy all text elements
+            if (this.welcomeTexts) {
+                this.welcomeTexts.forEach(text => text.destroy());
+                this.welcomeTexts = [];
+            }
+            // Finally, start the game
+            this.welcomeActive = false;
         });
     }
 }
