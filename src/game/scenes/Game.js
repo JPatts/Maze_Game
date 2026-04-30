@@ -30,43 +30,43 @@ export default class GameScene extends Phaser.Scene {
      */
     preload() {
         // background images
-        this.load.image('background', '/assets/Board/grass_patch_1.png');
+        this.load.image('background', 'assets/Board/grass_patch_1.png');
         
         // human images
         for (let i = 1; i <= 6; i++) {
-            this.load.image(`human_frame_${i}`, `/assets/Human/human_${i}.png`);
+            this.load.image(`human_frame_${i}`, `assets/Human/human_${i}.png`);
         }
        
-        this.load.image('human_down', '/assets/Human/human_1.png'); 
-        this.load.image('human_up', '/assets/Human/human_1.png');
-        this.load.image('human_left', '/assets/Human/human_2.png');
-        this.load.image('human_right', '/assets/Human/human_1.png');
-        this.load.image('human_dead', '/assets/Human/human_dead.png');
-        this.load.image('tombstone', '/assets/Human/tombstone.png');
+        this.load.image('human_down', 'assets/Human/human_1.png'); 
+        this.load.image('human_up', 'assets/Human/human_1.png');
+        this.load.image('human_left', 'assets/Human/human_2.png');
+        this.load.image('human_right', 'assets/Human/human_1.png');
+        this.load.image('human_dead', 'assets/Human/human_dead.png');
+        this.load.image('tombstone', 'assets/Human/tombstone.png');
 
         // Zombie images
         for (let i = 1; i <= 6; i++) {
-            this.load.image(`zombie_frame_${i}`, `/assets/Zombie/zombie_${i}.png`);
+            this.load.image(`zombie_frame_${i}`, `assets/Zombie/zombie_${i}.png`);
         }
        
-        this.load.image('zombie_down', '/assets/Zombie/zombie_1.png'); 
-        this.load.image('zombie_up', '/assets/Zombie/zombie_1.png');
-        this.load.image('zombie_left', '/assets/Zombie/zombie_2.png');
-        this.load.image('zombie_right', '/assets/Zombie/zombie_3.png');
+        this.load.image('zombie_down', 'assets/Zombie/zombie_1.png'); 
+        this.load.image('zombie_up', 'assets/Zombie/zombie_1.png');
+        this.load.image('zombie_left', 'assets/Zombie/zombie_2.png');
+        this.load.image('zombie_right', 'assets/Zombie/zombie_3.png');
 
         // key images
         for (let i = 1; i <= 24; i++) {
             const padded = String(i).padStart(2, '0');
-            this.load.image(`key_${padded}`, `/assets/Key/key_${padded}.png`);
+            this.load.image(`key_${padded}`, `assets/Key/key_${padded}.png`);
         }
 
         // door images
-        this.load.image('door_closed', `/assets/Dungeon_Door/door_closed.png`);
-        this.load.image('door_open', `/assets/Dungeon_Door/door_open.png`);
+        this.load.image('door_closed', `assets/Dungeon_Door/door_closed.png`);
+        this.load.image('door_open', `assets/Dungeon_Door/door_open.png`);
 
         // Death Animation
         for (let i = 1; i <= 9; i++) {
-            this.load.image(`death_frame_${i}`, `/assets/Death_Animation/Zombie_eating_Human_0${i}.png`);
+            this.load.image(`death_frame_${i}`, `assets/Death_Animation/Zombie_eating_Human_0${i}.png`);
         } 
     }
 
