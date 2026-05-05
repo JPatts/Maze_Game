@@ -120,9 +120,13 @@ class GameRecorder {
         return map[action] ?? -1;
     }
 
-    _computeStateFeatures(row,col) {
-        // TODO: compute the 7 state features
-        return [row, col];
+    /**
+     * Marks the final zombie experience as termianl
+     */
+    finalizeExperiences() {
+        if (this.experiences.length > 0) {
+            this.experiences[this.experiences.length - 1].done = true;
+        }
     }
 }
 
