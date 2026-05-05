@@ -178,6 +178,8 @@ export default class GameScene extends Phaser.Scene {
             !this.winTriggered &&
             this.zombieEntity.zombieGridPos.row === this.playerEntity.playerGridPos.row &&
             this.zombieEntity.zombieGridPos.col === this.playerEntity.playerGridPos.col) {
+                this.recorder.recordGameOver('zombie_wins');
+                this.recorder.exportSession();
                 this._triggerGameOver();
                 return;
             }
@@ -216,19 +218,10 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // record game over 
-        /**
-        if (zombieCaughtPlayer) {
-            this.recorder.recordGameOver('zombie_wins');
-        }
-
-        if(humanReachedDoor){
-            this.recorder.recordGameOver('human_wins');
-        }
-        */
-
         if (this.door && this.door.canEnter(this.playerEntity.playerGridPos)) {
             if (!this.winTriggered) {
+                this.recorder.recordGameOver('human_wins');
+                this.recorder.exportSession();
                 this.winTriggered = true;
                 this.showWinScreen();
             }

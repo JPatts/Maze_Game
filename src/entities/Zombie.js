@@ -181,13 +181,13 @@ export default class Zombie {
     }
 
     _deltaToDirection(dRow, dCol){
-        if (dRow === -1 && dCol === 0) return 'UP';
-        if (dRow === 1 && dCol === 0) return 'DOWN';
-        if (dRow === 0 && dCol === -1) return 'LEFT';
-        if (dRow === 0 && dCol === 1) return 'RIGHT';
-        return 'STAY';
+        if (dRow === -1 && dCol === 0) return 'up';
+        if (dRow === 1 && dCol === 0) return 'down';
+        if (dRow === 0 && dCol === -1) return 'left';
+        if (dRow === 0 && dCol === 1) return 'right';
+        return 'stay';
     }
-    
+
     /**
      * Smothly moves the zombie sprite toward the target pixel position (mirrors Player)
      * @param {number} delta - Time in milliseconds since the last frame.

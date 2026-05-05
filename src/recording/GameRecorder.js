@@ -116,7 +116,7 @@ class GameRecorder {
     }
 
     _actionToIndex(action){
-        const map = {'UP': 0, 'RIGHT': 1, 'DOWN': 2, 'LEFT': 3 };
+        const map = {'up': 0, 'right': 1, 'down': 2, 'left': 3 };
         return map[action] ?? -1;
     }
 

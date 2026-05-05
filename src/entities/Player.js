@@ -101,7 +101,7 @@ export default class Player {
         this._startMovement(newRow, newCol);
     }
 
-        /**
+    /**
      * Commits the palyer to moving toward a target grid cell and calculates the pixel destination.
      * @param {number} targetRow - Row index of the destination cell.
      * @param {number} targetCol - Column index of the destination cell.
