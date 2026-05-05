@@ -10,7 +10,7 @@ export default class Zombie {
 
         // Grid-based movement
         this.isMoving = false;
-        this.moveSpeed = 320; // pixels per second
+        this.moveSpeed = 360; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
 
@@ -164,6 +164,11 @@ export default class Zombie {
         this.isMoving = true;
         this.zombieGridPos.row = targetRow;
         this.zombieGridPos.col = targetCol;
+        const fromRow = this.zombieGridPos.row;
+        const fromCol = this.zombieGridPos.col;
+        const direction = this._deltaToDirection(targetRow - fromRow, targetCol - fromCol);
+        this.scene.recorder.recordMove('zombie',direction,fromRow, fromCol, targetRow, targetCol, (Date.now() - this.scene.recorder.startTime) / 1000);
+
 
         this.targetPosition = {
             x: targetCol * this.GRID_SIZE + this.GRID_SIZE / 2,
@@ -175,6 +180,14 @@ export default class Zombie {
         const dy = targetRow - (this.zombieGridPos.row);
     }
 
+    _deltaToDirection(dRow, dCol){
+        if (dRow === -1 && dCol === 0) return 'UP';
+        if (dRow === 1 && dCol === 0) return 'DOWN';
+        if (dRow === 0 && dCol === -1) return 'LEFT';
+        if (dRow === 0 && dCol === 1) return 'RIGHT';
+        return 'STAY';
+    }
+    
     /**
      * Smothly moves the zombie sprite toward the target pixel position (mirrors Player)
      * @param {number} delta - Time in milliseconds since the last frame.

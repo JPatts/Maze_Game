@@ -5,6 +5,7 @@ import Player from "../../entities/Player"
 import Zombie from "../../entities/Zombie";
 import Key from "../../entities/Key"; 
 import Door from "../../entities/Door"; 
+import GameRecorder from "../../recording/GameRecorder";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -78,6 +79,8 @@ export default class GameScene extends Phaser.Scene {
         this.gameOver = false;
         this.gameOverTriggered = false;
         this.welcomeActive = true;
+        this.recorder = new GameRecorder();
+        this.collectedKeys = 0;
        
         // hide html key counter
         const htmlCounter = document.getElementById('key-counter');
@@ -192,6 +195,11 @@ export default class GameScene extends Phaser.Scene {
 
             // check if player walked onto the key
             if (key.isPlayerOnKey(this.playerEntity.playerGridPos)) {
+                this.recorder.recordKeyCollection(
+                    this.collectedKeys,
+                    this.playerEntity.playerGridPos.row,
+                    this.playerEntity.playerGridPos.col,    
+                );
                 key.collect();
                 this.collectedKeys++;
 
@@ -207,6 +215,17 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         }
+
+        // record game over 
+        /**
+        if (zombieCaughtPlayer) {
+            this.recorder.recordGameOver('zombie_wins');
+        }
+
+        if(humanReachedDoor){
+            this.recorder.recordGameOver('human_wins');
+        }
+        */
 
         if (this.door && this.door.canEnter(this.playerEntity.playerGridPos)) {
             if (!this.winTriggered) {

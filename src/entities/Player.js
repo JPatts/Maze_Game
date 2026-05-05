@@ -82,6 +82,20 @@ export default class Player {
             return;
         }
 
+        if (direction && this.scene._isValidMove(
+            this.playerGridPos.row, 
+            this.playerGridPos.col, 
+            newRow, 
+            newCol)) {
+            // RECORD
+            const fromRow = this.playerGridPos.row;
+            const fromCol = this.playerGridPos.col;
+            this.scene.recorder.recordMove(
+                'human', direction, fromRow, fromCol, newRow, newCol,
+                (Date.now() - this.scene.recorder.startTime) / 1000
+            )
+        }
+
         // Update direction and start movement
         this._changePlayerDirection(direction);
         this._startMovement(newRow, newCol);
