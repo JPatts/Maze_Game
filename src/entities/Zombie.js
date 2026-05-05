@@ -161,14 +161,20 @@ export default class Zombie {
      * @param {number} targetCol
      */
     _startMovement(targetRow, targetCol) {
-        this.isMoving = true;
-        this.zombieGridPos.row = targetRow;
-        this.zombieGridPos.col = targetCol;
+        // save position before changing 
         const fromRow = this.zombieGridPos.row;
         const fromCol = this.zombieGridPos.col;
+
+        // compute direciton from old pos to target
         const direction = this._deltaToDirection(targetRow - fromRow, targetCol - fromCol);
+       
+        // record the move
         this.scene.recorder.recordMove('zombie',direction,fromRow, fromCol, targetRow, targetCol, (Date.now() - this.scene.recorder.startTime) / 1000);
 
+        // now update the grid pos
+        this.zombieGridPos.row = targetRow;
+        this.zombieGridPos.col = targetCol;
+        this.isMoving = true;
 
         this.targetPosition = {
             x: targetCol * this.GRID_SIZE + this.GRID_SIZE / 2,

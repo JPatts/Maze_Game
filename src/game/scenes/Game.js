@@ -179,7 +179,12 @@ export default class GameScene extends Phaser.Scene {
             this.zombieEntity.zombieGridPos.row === this.playerEntity.playerGridPos.row &&
             this.zombieEntity.zombieGridPos.col === this.playerEntity.playerGridPos.col) {
                 this.recorder.recordGameOver('zombie_wins');
-                this.recorder.exportSession();
+                //this.recorder.exportSession();
+
+                const session = this.recorder.exportSession();
+                console.log(JSON.stringify(session, null, 2));
+
+                
                 this._triggerGameOver();
                 return;
             }
@@ -221,7 +226,12 @@ export default class GameScene extends Phaser.Scene {
         if (this.door && this.door.canEnter(this.playerEntity.playerGridPos)) {
             if (!this.winTriggered) {
                 this.recorder.recordGameOver('human_wins');
-                this.recorder.exportSession();
+                
+                //this.recorder.exportSession();
+
+                const session = this.recorder.exportSession();
+                console.log(JSON.stringify(session, null, 2));
+
                 this.winTriggered = true;
                 this.showWinScreen();
             }
