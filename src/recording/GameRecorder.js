@@ -57,10 +57,9 @@ class GameRecorder {
      * 
      */
     recordZombieExperience(action, fromRow, fromCol, toRow, toCol) {
-        // placeholders for state features -- will fine tune with python RL program is written
-        const state = this._computeStateFeatures(fromRow, fromCol);
-        const nextState = this._computeStateFeatures(toRow, toCol);
-
+        const state = [fromRow, fromCol];
+        const nextState = [toRow, toCol];
+        
         this.experiences.push({
             exp_id: this.experiences.length + 1,
             game_id: this.gameID,
