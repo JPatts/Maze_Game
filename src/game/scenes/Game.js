@@ -128,6 +128,12 @@ export default class GameScene extends Phaser.Scene {
 
         this.winTriggered = false;
         this.showWelcomeScreen();
+
+        /**
+        this.input.keyboard.on('keydown-M', () => {
+            this.exportMazeLayout();
+        });
+        */
     }
 
     /**
@@ -469,4 +475,34 @@ export default class GameScene extends Phaser.Scene {
             this.welcomeActive = false;
         });
     }
+
+    /** 
+     * this function was only needed once to create a snapshot of the maze and its contents for the python backend
+    exportMazeLayout() {
+        const layout = {
+            rows: this.BOARD_HEIGHT,
+            cols: this.BOARD_WIDTH,
+            grid: this.grid,
+            keyPositions: [
+                {row: 0, col: 0},
+                {row: 14, col: 14},
+                {row: 7, col: 7}
+            ],
+            doorPositions: {row: 8, col: 14},
+            zombieStart: {row: 0, col: 14},
+            playerStart: {row: 14, col: 0}
+        };
+
+        const jsonStr = JSON.stringify(layout, null, 2);
+        const blob = new Blob([jsonStr], {type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'maze_layout.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    */
 }
