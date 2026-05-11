@@ -25,7 +25,7 @@ export default class Zombie {
         this.isMoving = false;
         this.targetPosition = {x: 0, y: 0};
         this.moveDirection = {x: 0, y: 0};
-        this.Speed = 120; // pixels per second
+        this.speed = 120; // pixels per second
         this.lastAnimDirection = 'down';
 
         // Animation
@@ -127,11 +127,10 @@ export default class Zombie {
             if (neighbors.length > 0) {
                 const [r, c] = neighbors[Math.floor(Math.random() * neighbors.length)];
                 this._startMovement(r,c);
+            } else {
+                return;
             }
         }
-
-        this._updateMovement(delta);
-        this._handleWalkingAnimation(delta);
     }
 
     /**
@@ -157,7 +156,7 @@ export default class Zombie {
      * @returns {number} 0-3
      */
     _qAction(stateKey) {
-        if (this.qtable && stateKey in this.qTable) {
+        if (this.qTable && stateKey in this.qTable) {
             const qValues = this.qTable[stateKey];
             const maxQ = Math.max(...qValues);
             const bestActions = [];
@@ -208,7 +207,7 @@ export default class Zombie {
         };
     }
 
-    _deltaToDirection(dRow, dCol){
+    _deltaToDirection(dRow , dCol){
         if (Math.abs(dRow) > Math.abs(dCol)) {
             return dRow > 0 ? 'right' : 'left';
         } else {
