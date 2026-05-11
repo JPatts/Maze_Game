@@ -1,27 +1,64 @@
 import Phaser from "phaser";
 
 export default class Zombie {
+    /**
+     * @param {Phaser.Scene} scene - required by phaser
+     * @param {number} gridSize - size of one grid cell in pixels
+     * @param {number} zombieSize - wifth/height of the zombie sprite
+     * @param {object} wallManager - provides canMoveToFromTo info
+     * @param {object} mazeGenerator - provides getNeighbors(row,col) for fallback
+     */
     constructor(scene, gridSize, zombieSize, wallManager, mazeGenerator) {
         this.scene = scene;
-        this.GRID_SIZE = gridSize;
-        this.ZOMBIE_SIZE = zombieSize;
+        this.gridSize = gridSize;
+        this.zombieSize = zombieSize;
         this.wallManager = wallManager;
         this.mazeGenerator = mazeGenerator;
 
+        // Qtable data 
+        this.qTable = null
+        this.epsilon = 0;
+
         // Grid-based movement
+        this.sprite = null;
+        this.zombieGridPos = { row: 0, col: 0}
         this.isMoving = false;
-        this.moveSpeed = 360; // pixels per second
-        this.targetPosition = null;
-        this.playerGridPos = { row: 0, col: 0 };
+        this.targetPosition = {x: 0, y: 0};
+        this.moveDirection = {x: 0, y: 0};
+        this.Speed = 120; // pixels per second
+        this.lastAnimDirection = 'down';
 
         // Animation
-        this.currentFrame = 1;
-        this.animationTimer = 0;
-        this.animationSpeed = 32;
+        this.walkFrame = 1;
+        this.walkTimer = 0;
+        this.walkInterval = 32;
+    }
 
-        // A* state
-        this.currentPath = [];
-        this.pathIndex = 0; 
+    /** 
+     * Load the qtable from local json file
+     * @returns {Promise<void>}
+     */
+    async initQTable() {
+        try {
+            const response = await fetch('qtable.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+            const data = await response.json();
+
+            if (data.q_table) {
+                this.qTable = data.q_table;
+                if (data.epsilon != undefined) {
+                    this.epsilon = data.epsilon;
+                }
+            } else {
+                this.qTable = data;
+            }
+            console.log('QTable loaded successfully.');
+        } catch (error) {
+            console.warn('Failed to load Q-Table, zombie will make random move.', error);
+            this.qTable = null;
+        }
     }
 
     /**
@@ -30,31 +67,66 @@ export default class Zombie {
      * @param {number} col - Starting col.
      */
     initializeZombie(row, col) {
-        this.zombieGridPos = {row, col}
+        this.zombieGridPos.row = row;
+        this.zombieGridPos.col = col;
         
-        const startX = col * this.GRID_SIZE + this.GRID_SIZE / 2;
-        const startY = row * this.GRID_SIZE + this.GRID_SIZE / 2;
+        const startX = col * this.gridSize + this.gridSize / 2;
+        const startY = row * this.gridSize + this.gridSize / 2;
 
-        this.zombie = this.scene.add.sprite(startX,startY, 'zombie_down');
-        this.zombie.setDisplaySize(this.ZOMBIE_SIZE, this.ZOMBIE_SIZE);
-    
-        this.zombieDirection = 'down';
-        this.targetPosition = { x: startX, y: startY};
+
+        this.sprite = this.scene.add.sprite(startX,startY, 'zombie');
+        this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
+        this.sprite.setDepth(10);
     }
 
     /**
-     * Main AI update called every frame. Recalculates the path and issues the next move.
+     * Main AI update - qtable lookup
      * @param {number} delta - Time in milliseconds since the last frame.
      * @param {{row: number, col: number}} playerGridPos - The human's current grid position
+     * @param {number} collectedKeys - how many keys the human has picked up
      */
-    updateAI(delta, playerGridPos) {
-        // if not moving
+    updateAI(delta, playerGridPos, collectedKeys) {
         if (!this.isMoving) {
-            this._recalculatePath(playerGridPos);
+            this._updateMovement(delta);
+            this._handleWalkingAnimation(delta);
+            return;
+        }
 
-            if (this.currentPath.length > 1) {
-                const nextStep = this.currentPath[1]; 
-                this._startMovement(nextStep.row, nextStep.col);
+        // recreating python's _state_to_key()
+        const stateKey = this._buildStateKey(
+            this.zombieGridPos.row,
+            this.zombieGridPos.col,
+            collectedKeys
+        );
+
+        const action = this._qAction(stateKey);
+
+        let dRow = 0, dCol = 0;
+        switch (action) {
+            case 0: dRow = -1; break; // up
+            case 1: dCol = 1; break; // right
+            case 2: dRow = 1; break; // down
+            case 3: dCol = -1; break; // left
+        }
+
+        const targetRow = this.zombieGridPos.row + dRow;
+        const targetCol = this.zombieGridPos.col + dCol;
+
+        // validate move
+        if (this.wallManager.canMoveFromTo(
+            this.zombieGridPos.row, 
+            this.zombieGridPos.col, 
+            targetRow, targetCol)
+        ) {
+            this._startMovement(targetRow, targetCol);
+        } else {
+            // fallback choose rand()
+            const neighbors = this._getNeighbors(
+                this.zombieGridPos.row, this.zombieGridPos.col
+            );
+            if (neighbors.length > 0) {
+                const [r, c] = neighbors[Math.floor(Math.random() * neighbors.length)];
+                this._startMovement(r,c);
             }
         }
 
@@ -63,96 +135,56 @@ export default class Zombie {
     }
 
     /**
-     * Runs A* from the zombie's current position to the players grid position.
-     * Stores the resulting path in currentPath
-     * @param {{row: number, col: number}} targetPos - The Player's grid position.
+     * Build the state key string exactly matching backend version
+     * Format: '[zombieRow, zombieCol, [wallUp, wallRight, wallDown, wallLeft], collectedKeys]'
      */
-    _recalculatePath(targetPos) {
-        const start = this.zombieGridPos;
-        const goal = targetPos;
+    _buildStateKey(zombieRow, zombieCol, collectedKeys) {
+        // wall booleans
+        const wallUp = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow - 1, zombieCol);
+        const wallRight = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow, zombieCol + 1);
+        const wallDown = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow + 1, zombieCol);
+        const wallLeft = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow, zombieCol - 1);
 
-        // if already on target no path needed
-        if (start.row === goal.row && start.col === goal.col) {
-            this.currentPath = [start];
-            return;
-        }
+        const walls = [wallUp, wallRight, wallDown, wallLeft];
+        return JSON.stringify([zombieRow, zombieCol, walls, collectedKeys]);
+    }
 
-        // A* open list (prioritized by fCost) and closed set
-        const openList = [];
-        const closedSet = new Set();
-        const gCost = {}; // Cost from start to given 
-        const parent = {}; // For reconstructing the path
-
-        const startKey = `${start.row},${start.col}`;
-        gCost[startKey] = 0;
-        openList.push({
-            row: start.row,
-            col: start.col,
-            fCost: this._heuristic(start, goal)
-        });
-
-        let pathFound = false;
-
-        while (openList.length > 0) {
-            // Sort by fCost (ascending) and take the best node
-            openList.sort((a,b) => a.fCost - b.fCost);
-            const current = openList.shift();
-            const currentKey = `${current.row},${current.col}`;
-
-            // check goal reached
-            if (current.row === goal.row && current.col === goal.col) {
-                pathFound = true;
-                break;
-            }
-
-            closedSet.add(currentKey);
-
-            // explore neighbors using the maze generator (respects walls)
-            const neighbors = this.mazeGenerator.getNeighbors(current.row, current.col);
-            for (const [nRow, nCol] of neighbors) {
-                const neighborKey = `${nRow},${nCol}`;
-                if (closedSet.has(neighborKey)) continue;
-
-                const tentativeG = (gCost[currentKey] || 0) + 1;
-
-                if (tentativeG < (gCost[neighborKey] || Infinity)) {
-                    gCost[neighborKey] = tentativeG;
-                    parent[neighborKey] = { row: current.row, col: current.col };
-                    const h = this._heuristic({ row: nRow, col: nCol }, goal);
-                    openList.push({
-                        row: nRow,
-                        col: nCol,
-                        fCost: tentativeG + h
-                    });
-                }
-            }
-
-        }
-
-        // Reconstruct path
-        if (pathFound) {
-            const path = [];
-            let step = { row: goal.row, col: goal.col };
-            while (step) {
-                path.unshift(step);
-                const key = `${step.row},${step.col}`;
-                step = parent[key];
-            }
-            this.currentPath = path;
-        } else {
-            // no path found; should never happen in connected maze
-            this.currentPath = [this.zombieGridPos];
-        }
-    } 
 
     /**
-     * Manhattan Distance heuristic for A*
-     * @param {{row: number, col: number}} a
-     * @param {{row: number, col: number}} b 
-     * @returns {number}
+     * Select the best action from the Q-Table for the given state key.
+     * Falls back to random action if the state is missing.
+     * @param {string} stateKey
+     * @returns {number} 0-3
      */
-    _heuristic(a,b) {
-        return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+    _qAction(stateKey) {
+        if (this.qtable && stateKey in this.qTable) {
+            const qValues = this.qTable[stateKey];
+            const maxQ = Math.max(...qValues);
+            const nestActions = [];
+            qValues.forEach((val,idx) => {
+                if (val === maxQ) bestActions.push(idx);
+            });
+            return bestActions[Math.floor(Math.random() * bestActions.length)];
+        }
+        // Fallback
+        return Math.floor(Math.random() * 4);
+    }
+
+    /**
+     * Get all valid neighbouring cells (open passages only)
+     * Used as fallback wehn Q-table suggests a blocked move
+     * @returns {Array<[number,number]>}
+     */
+    _getNeighbors(row,col) {
+        const candidates = [
+            [row - 1, col], // up
+            [row, col + 1], // right 
+            [row + 1, col], // down
+            [row, col - 1], // left
+        ];
+        return candidates.filter(([r,c]) => {
+            return this.wallManager.canMoveFromTo(row,col,r,c);
+        });
     }
 
     /** 
@@ -161,37 +193,27 @@ export default class Zombie {
      * @param {number} targetCol
      */
     _startMovement(targetRow, targetCol) {
-        // save position before changing 
-        const fromRow = this.zombieGridPos.row;
-        const fromCol = this.zombieGridPos.col;
-
-        // compute direciton from old pos to target
-        const direction = this._deltaToDirection(targetRow - fromRow, targetCol - fromCol);
-       
-        // record the move
-        this.scene.recorder.recordMove('zombie',direction,fromRow, fromCol, targetRow, targetCol, (Date.now() - this.scene.recorder.startTime) / 1000);
-
-        // now update the grid pos
-        this.zombieGridPos.row = targetRow;
-        this.zombieGridPos.col = targetCol;
         this.isMoving = true;
-
         this.targetPosition = {
-            x: targetCol * this.GRID_SIZE + this.GRID_SIZE / 2,
-            y: targetRow * this.GRID_SIZE + this.GRID_SIZE / 2,
-        }
+            x: targetCol * this.gridSize + this.gridSize / 2,
+            y: targetRow * this.gridSize + this.gridSize / 2
+        };
 
-        // set direction for sprite
-        const dx = targetCol - (this.zombieGridPos.col);
-        const dy = targetRow - (this.zombieGridPos.row);
+        const deltaX = this.targetPosition.x - this.sprite.x;
+        const deltaY = this.targetPosition.y - this.sprite.y;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        this.moveDirection = {
+            x: (deltaX / distance) * this.speed,
+            y: (deltaY / distance) * this.speed
+        };
     }
 
     _deltaToDirection(dRow, dCol){
-        if (dRow === -1 && dCol === 0) return 'up';
-        if (dRow === 1 && dCol === 0) return 'down';
-        if (dRow === 0 && dCol === -1) return 'left';
-        if (dRow === 0 && dCol === 1) return 'right';
-        return 'stay';
+        if (Math.abs(dx) > Math.abs(dy)) {
+            return dx > 0 ? 'right' : 'left';
+        } else {
+            return dy > 0 ? 'down' : 'up';
+        }
     }
 
     /**
@@ -199,23 +221,25 @@ export default class Zombie {
      * @param {number} delta - Time in milliseconds since the last frame.
      */
     _updateMovement(delta) {
-        if (!this.isMoving) return;
+        const deltaSeconds = delta / 1000;
+        this.sprite.x += this.moveDirection.x * deltaSeconds;
+        this.sprite.y += this.moveDirection.y * deltaSeconds;
 
-        const speed = this.moveSpeed * (delta / 1000);
-        const dx = this.targetPosition.x - this.zombie.x;
-        const dy = this.targetPosition.y - this.zombie.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance <= speed) {
-            // Snap to target
-            this.zombie.x = this.targetPosition.x;
-            this.zombie.y = this.targetPosition.y;
+        // Snap to target when close enough
+        const dx = this.targetPosition.x - this.sprite.x;
+        const dy = this.targetPosition.y - this.sprite.y;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+            this.sprite.x = this.targetPosition.x;
+            this.sprite.y = this.targetPosition.y;
             this.isMoving = false;
-        } else {
-            // Move toward target
-            const ratio = speed / distance;
-            this.zombie.x += dx * ratio;
-            this.zombie.y += dy * ratio;
+
+            // Update logical grid position
+            this.zombieGridPos.row = Math.round(
+                (this.sprite.y - this.gridSize / 2) / this.gridSize
+            );
+            this.zombieGridPos.col = Math.round(
+                (this.sprite.x - this.gridSize / 2) / this.gridSize
+            );
         }
     }
 
@@ -224,19 +248,16 @@ export default class Zombie {
      * @param {number} delta
      */
     _handleWalkingAnimation(delta) {
-        if (this.isMoving) {
-            this.animationTimer += delta;
-            if ( this.animationTimer >= this.animationSpeed) {
-                this.animationTimer = 0;
-                this.currentFrame = (this.currentFrame % 6) + 1;
-                this.zombie.setTexture(`zombie_frame_${this.currentFrame}`);
-                this.zombie.setDisplaySize(this.ZOMBIE_SIZE, this.ZOMBIE_SIZE);
-            }
-        } else {
-            if (this.currentFrame !== 0) {
-                this.currentFrame = 0;
-                this.zombie.setTexture(`zombie_${this.zombieDirection}`);
-                this.zombie.setDisplaySize(this.ZOMBIE_SIZE, this.ZOMBIE_SIZE);
+        this.walkTimer += delta;
+        if (this.walkTimer >= this.walkInterval) {
+            this.walkTimer = 0;
+            this.walkFrame = (this.walkFrame + 1) % 4; // 4 walk frames
+            const direction = this._deltaToDirection(
+                this.moveDirection.x, this.moveDirection.y
+            );
+            const frameKey = `zombie_walk_${direction}_${this.walkFrame}`;
+            if (this.scene.textures.exists(frameKey)) {
+                this.sprite.setTexture(frameKey);
             }
         }
     }

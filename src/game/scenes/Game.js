@@ -75,7 +75,7 @@ export default class GameScene extends Phaser.Scene {
      * Creates and initializes all game objects when the scene starts.
      * @returns {void}
      */
-    create() {
+    async create() {
         this.gameOver = false;
         this.gameOverTriggered = false;
         this.welcomeActive = true;
@@ -106,6 +106,7 @@ export default class GameScene extends Phaser.Scene {
             this.wallManager,
             this.mazeGenerator
         );
+        await this.zombieEntity.initQTable(); 
         this.zombieEntity.initializeZombie(0,14);
 
         // Key placements
@@ -201,7 +202,7 @@ export default class GameScene extends Phaser.Scene {
         this.playerEntity._handleWalkingAnimation(delta);
 
         // Zombie 
-        this.zombieEntity.updateAI(delta, this.playerEntity.playerGridPos);
+        this.zombieEntity.updateAI(delta, this.playerEntity.playerGridPos, this.collectedKeys);
 
         for (const key of this.keys) {
             // update spinning animation
