@@ -86,7 +86,7 @@ export default class Zombie {
      * @param {number} collectedKeys - how many keys the human has picked up
      */
     updateAI(delta, playerGridPos, collectedKeys) {
-        if (!this.isMoving) {
+        if (this.isMoving) {
             this._updateMovement(delta);
             this._handleWalkingAnimation(delta);
             return;
@@ -160,7 +160,7 @@ export default class Zombie {
         if (this.qtable && stateKey in this.qTable) {
             const qValues = this.qTable[stateKey];
             const maxQ = Math.max(...qValues);
-            const nestActions = [];
+            const bestActions = [];
             qValues.forEach((val,idx) => {
                 if (val === maxQ) bestActions.push(idx);
             });
@@ -209,10 +209,10 @@ export default class Zombie {
     }
 
     _deltaToDirection(dRow, dCol){
-        if (Math.abs(dx) > Math.abs(dy)) {
-            return dx > 0 ? 'right' : 'left';
+        if (Math.abs(dRow) > Math.abs(dCol)) {
+            return dRow > 0 ? 'right' : 'left';
         } else {
-            return dy > 0 ? 'down' : 'up';
+            return dCol > 0 ? 'down' : 'up';
         }
     }
 
