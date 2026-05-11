@@ -14,6 +14,7 @@ export default class Zombie {
         this.zombieSize = zombieSize;
         this.wallManager = wallManager;
         this.mazeGenerator = mazeGenerator;
+        this.currentDirection = 'down';
 
         // Qtable data 
         this.qTable = null
@@ -25,7 +26,7 @@ export default class Zombie {
         this.isMoving = false;
         this.targetPosition = {x: 0, y: 0};
         this.moveDirection = {x: 0, y: 0};
-        this.speed = 120; // pixels per second
+        this.speed = 400; // pixels per second
         this.lastAnimDirection = 'down';
 
         // Animation
@@ -74,7 +75,7 @@ export default class Zombie {
         const startY = row * this.gridSize + this.gridSize / 2;
 
 
-        this.sprite = this.scene.add.sprite(startX,startY, 'zombie');
+        this.sprite = this.scene.add.sprite(startX,startY, 'zombie_down');
         this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
         this.sprite.setDepth(10);
     }
@@ -213,6 +214,9 @@ export default class Zombie {
         } else {
             return dCol > 0 ? 'down' : 'up';
         }
+
+        this.currentDirection = direction; 
+        return direction;
     }
 
     /**
@@ -247,16 +251,22 @@ export default class Zombie {
      * @param {number} delta
      */
     _handleWalkingAnimation(delta) {
-        this.walkTimer += delta;
-        if (this.walkTimer >= this.walkInterval) {
-            this.walkTimer = 0;
-            this.walkFrame = (this.walkFrame + 1) % 4; // 4 walk frames
-            const direction = this._deltaToDirection(
-                this.moveDirection.x, this.moveDirection.y
-            );
-            const frameKey = `zombie_walk_${direction}_${this.walkFrame}`;
-            if (this.scene.textures.exists(frameKey)) {
-                this.sprite.setTexture(frameKey);
+        if (this.isMoving) {
+            this.walkTimer += delta;
+            if (this.walkTimer >= this.walkInterval) {
+                this.walkTimer = 0;
+                this.walkFrame = (this.walkFrame % 6) + 1;
+                const framKey = `zombie_frame_#{this.walkFrame}`;
+                if (this.scene.textures.exists(framKey)) {
+                    this.sprite.setTexture(framKey);
+                    this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
+                }
+            }
+        } else {
+            const idleKey = `zombie_${this.currentDirection}`;
+            if (this.scene.textures.exists(idleKey)) {
+                this.sprite.setTexture(idleKey);
+                this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
             }
         }
     }
