@@ -272,9 +272,9 @@ export default class Zombie {
             if (this.walkTimer >= this.walkInterval) {
                 this.walkTimer = 0;
                 this.walkFrame = (this.walkFrame % 6) + 1;
-                const framKey = `zombie_frame_#{this.walkFrame}`;
-                if (this.scene.textures.exists(framKey)) {
-                    this.sprite.setTexture(framKey);
+                const frameKey = `zombie_frame_${this.walkFrame}`;
+                if (this.scene.textures.exists(frameKey)) {
+                    this.sprite.setTexture(frameKey);
                     this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
                 }
             }
