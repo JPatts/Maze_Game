@@ -57,8 +57,9 @@ export default class Zombie {
             }
             console.log('QTable loaded successfully.');
         } catch (error) {
-            console.warn('Failed to load Q-Table, zombie will make random move.', error);
-            this.qTable = null;
+            throw new Error(
+                `Cannot start game - Q-Table file is missing or corrupt.\n${error.message}`
+            );
         }
     }
 
@@ -109,9 +110,24 @@ export default class Zombie {
             case 2: dRow = 1; break; // down
             case 3: dCol = -1; break; // left
         }
-
+        
         const targetRow = this.zombieGridPos.row + dRow;
         const targetCol = this.zombieGridPos.col + dCol;
+
+        const GRID_ROWS = 15;
+        const GRID_COLS = 15;
+
+        if (targetRow < 0 || targetRow >= GRID_ROWS || targetCol < 0 || targetCol >= GRID_COLS) {
+            const neighbors = this._getNeighbors(
+                this.zombieGridPos.row, this.zombieGridPos.col
+            );
+
+            if (neighbors.length > 0) {
+                const [r,c] = neighbors[Math.floor(Math.random() * neighbors.length)];
+                this._startMovement(r,c);
+            }
+            return;
+        }
 
         // validate move
         if (this.wallManager.canMoveFromTo(
