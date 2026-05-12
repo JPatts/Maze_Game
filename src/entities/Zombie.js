@@ -26,7 +26,7 @@ export default class Zombie {
         this.isMoving = false;
         this.targetPosition = {x: 0, y: 0};
         // this.moveDirection = {x: 0, y: 0};
-        this.speed = 400; // pixels per second
+        this.speed = 300; // pixels per second
         this.lastAnimDirection = 'down';
 
         // Animation
@@ -163,7 +163,11 @@ export default class Zombie {
         const wallLeft = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow, zombieCol - 1);
 
         const walls = [wallUp, wallRight, wallDown, wallLeft];
-        return JSON.stringify([zombieRow, zombieCol, walls, collectedKeys]);
+        
+        // convert bools to 0/1 integers
+        const wallsStr = walls.map(w => w ? 1 : 0).join(',');
+
+        return `${zombieRow}|${zombieCol}|${wallsStr}|${collectedKeys}`
     }
 
 
