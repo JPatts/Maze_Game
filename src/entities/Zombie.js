@@ -25,7 +25,7 @@ export default class Zombie {
         this.zombieGridPos = { row: 0, col: 0}
         this.isMoving = false;
         this.targetPosition = {x: 0, y: 0};
-        this.moveDirection = {x: 0, y: 0};
+        // this.moveDirection = {x: 0, y: 0};
         this.speed = 400; // pixels per second
         this.lastAnimDirection = 'down';
 
@@ -240,25 +240,28 @@ export default class Zombie {
      * @param {number} delta - Time in milliseconds since the last frame.
      */
     _updateMovement(delta) {
-        const deltaSeconds = delta / 1000;
-        this.sprite.x += this.moveDirection.x * deltaSeconds;
-        this.sprite.y += this.moveDirection.y * deltaSeconds;
-
-        // Snap to target when close enough
+        const speed = this.speed * (delta / 1000);
         const dx = this.targetPosition.x - this.sprite.x;
         const dy = this.targetPosition.y - this.sprite.y;
-        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= speed) {
             this.sprite.x = this.targetPosition.x;
             this.sprite.y = this.targetPosition.y;
             this.isMoving = false;
 
-            // Update logical grid position
+            // Update lgical grid position 
             this.zombieGridPos.row = Math.round(
                 (this.sprite.y - this.gridSize / 2) / this.gridSize
             );
             this.zombieGridPos.col = Math.round(
                 (this.sprite.x - this.gridSize / 2) / this.gridSize
             );
+        } else {
+            // Move toward target
+            const ratio = speed /distance;
+            this.sprite.x += dx * ratio;
+            this.sprite.y += dy * ratio;
         }
     }
 
