@@ -280,7 +280,7 @@ export default class GameScene extends Phaser.Scene {
         // Hide the original sprites (to be replaced by death animation)
         this.playerEntity.player.setVisible(false);
         if (this.zombieEntity && this.zombieEntity.zombie) {
-            this.zombieEntity.zombie.setVisible(false);
+            this.zombieEntity.sprite.setVisible(false);
         }
 
         // position of the collision ( the player's cell)
@@ -344,7 +344,7 @@ export default class GameScene extends Phaser.Scene {
     showWinScreen() {
         // Hide zombie 
         if (this.zombieEntity && this.zombieEntity.zombie) {
-            this.zombieEntity.zombie.setVisible(false);
+            this.zombieEntity.sprite.setVisible(false);
         }
 
         // Semi-transparent dark overlay

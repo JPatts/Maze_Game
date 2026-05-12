@@ -88,6 +88,7 @@ export default class Zombie {
      * @param {number} collectedKeys - how many keys the human has picked up
      */
     updateAI(delta, playerGridPos, collectedKeys) {
+        if (this.scene.gameOver) return;
         if (this.isMoving) {
             this._updateMovement(delta);
             this._handleWalkingAnimation(delta);
