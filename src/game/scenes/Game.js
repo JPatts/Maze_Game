@@ -202,7 +202,9 @@ export default class GameScene extends Phaser.Scene {
         this.playerEntity._handleWalkingAnimation(delta);
 
         // Zombie 
-        this.zombieEntity.updateAI(delta, this.playerEntity.playerGridPos, this.collectedKeys);
+        if (!this.winTriggered) {
+            this.zombieEntity.updateAI(delta, this.playerEntity.playerGridPos, this.collectedKeys);
+        }
 
         for (const key of this.keys) {
             // update spinning animation
@@ -280,7 +282,8 @@ export default class GameScene extends Phaser.Scene {
         // Hide the original sprites (to be replaced by death animation)
         this.playerEntity.player.setVisible(false);
         if (this.zombieEntity && this.zombieEntity.zombie) {
-            this.zombieEntity.sprite.setVisible(false);
+            this.zombieEntity.zombie.destroy();
+            this.zombieEntity.zombie = null;
         }
 
         // position of the collision ( the player's cell)
@@ -290,6 +293,7 @@ export default class GameScene extends Phaser.Scene {
         // create death animation
         this.deathSprite = this.add.sprite(cellX, cellY, 'death_frame_1');
         this.deathSprite.setDisplaySize(this.GRID_SIZE, this.GRID_SIZE);
+        this.deathSprite.setDepth(100);
 
         // cycle through death animation frames
         let currentFrame = 1;
