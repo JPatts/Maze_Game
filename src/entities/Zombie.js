@@ -99,8 +99,8 @@ export default class Zombie {
         const stateKey = this._buildStateKey(
             this.zombieGridPos.row,
             this.zombieGridPos.col,
-            this.playerGridPos.row,
-            this.playerGridPos.col
+            playerGridPos.row,
+            playerGridPos.col 
         );
 
         const action = this._qAction(stateKey);
