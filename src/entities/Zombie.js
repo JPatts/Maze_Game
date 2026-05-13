@@ -99,7 +99,8 @@ export default class Zombie {
         const stateKey = this._buildStateKey(
             this.zombieGridPos.row,
             this.zombieGridPos.col,
-            collectedKeys
+            this.playerGridPos.row,
+            this.playerGridPos.col
         );
 
         const action = this._qAction(stateKey);
@@ -152,24 +153,54 @@ export default class Zombie {
     }
 
     /**
-     * Build the state key string exactly matching backend version
-     * Format: '[zombieRow, zombieCol, [wallUp, wallRight, wallDown, wallLeft], collectedKeys]'
+     * Build a state key string that mirrors the backend format:
+     *   "zombieRow|zombieCol|wallsStr|direction|distanceBucket"
+     *
+     * @param {number} zombieRow - current zombie row
+     * @param {number} zombieCol - current zombie column
+     * @param {number} humanRow  - current human row
+     * @param {number} humanCol  - current human column
+     * @returns {string} state key
      */
-    _buildStateKey(zombieRow, zombieCol, collectedKeys) {
-        // wall booleans
-        const wallUp = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow - 1, zombieCol);
+    _buildStateKey(zombieRow, zombieCol, humanRow, humanCol) {
+        // 1. Walls (comma‑separated 0/1 values)
+        const wallUp    = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow - 1, zombieCol);
         const wallRight = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow, zombieCol + 1);
-        const wallDown = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow + 1, zombieCol);
-        const wallLeft = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow, zombieCol - 1);
+        const wallDown  = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow + 1, zombieCol);
+        const wallLeft  = !this.wallManager.canMoveFromTo(zombieRow, zombieCol, zombieRow, zombieCol - 1);
 
         const walls = [wallUp, wallRight, wallDown, wallLeft];
-        
-        // convert bools to 0/1 integers
         const wallsStr = walls.map(w => w ? 1 : 0).join(',');
 
-        return `${zombieRow}|${zombieCol}|${wallsStr}|${collectedKeys}`
-    }
+        // 2. Direction (8 compass points)
+        const dr = humanRow - zombieRow;
+        const dc = humanCol - zombieCol;
 
+        let direction;
+        if (dr === 0 && dc === 0) {
+            direction = "same";
+        } else {
+            // same formula as Python: angle = atan2(-dr, dc)
+            const angle = Math.atan2(-dr, dc);
+            const positiveAngle = (angle + 2 * Math.PI) % (2 * Math.PI);
+            const idx = Math.round(positiveAngle / (Math.PI / 4)) % 8;
+            const DIRS = ["E", "NE", "N", "NW", "W", "SW", "S", "SE"];
+            direction = DIRS[idx];
+        }
+
+        // 3. Distance bucket (Manhattan distance)
+        const dist = Math.abs(dr) + Math.abs(dc);
+        let bucket;
+        if (dist <= 2) {
+            bucket = "close";
+        } else if (dist <= 6) {
+            bucket = "medium";
+        } else {
+            bucket = "far";
+        }
+
+        return `${zombieRow}|${zombieCol}|${wallsStr}|${direction}|${bucket}`;
+    }
 
     /**
      * Select the best action from the Q-Table for the given state key.
