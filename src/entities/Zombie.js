@@ -26,7 +26,7 @@ export default class Zombie {
         this.isMoving = false;
         this.targetPosition = {x: 0, y: 0};
         // this.moveDirection = {x: 0, y: 0};
-        this.speed = 300; // pixels per second
+        this.speed = 400; // pixels per second
         this.lastAnimDirection = 'down';
 
         // Animation
