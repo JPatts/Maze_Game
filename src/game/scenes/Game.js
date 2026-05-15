@@ -272,18 +272,18 @@ export default class GameScene extends Phaser.Scene {
         this.gameOverTriggered = true;
         this.gameOver = true;
 
-        if (this.zombieEntity && this.zombieEntity.zombie) {
+        if (this.zombieEntity && this.zombieEntity.sprite) {
             const playerX = this.playerEntity.player.x;
             const playerY = this.playerEntity.player.y;
-            this.zombieEntity.zombie.x = playerX;
-            this.zombieEntity.zombie.y = playerY;
+            this.zombieEntity.sprite.x = playerX;
+            this.zombieEntity.sprite.y = playerY;
         }
 
         // Hide the original sprites (to be replaced by death animation)
         this.playerEntity.player.setVisible(false);
-        if (this.zombieEntity && this.zombieEntity.zombie) {
-            this.zombieEntity.zombie.destroy();
-            this.zombieEntity.zombie = null;
+        if (this.zombieEntity && this.zombieEntity.sprite) {
+            this.zombieEntity.sprite.destroy();
+            this.zombieEntity.sprite = null;
         }
 
         // position of the collision ( the player's cell)
@@ -347,7 +347,7 @@ export default class GameScene extends Phaser.Scene {
 
     showWinScreen() {
         // Hide zombie 
-        if (this.zombieEntity && this.zombieEntity.zombie) {
+        if (this.zombieEntity && this.zombieEntity.sprite) {
             this.zombieEntity.sprite.setVisible(false);
         }
 
