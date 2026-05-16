@@ -14,11 +14,8 @@ export default class Player {
         this.moveSpeed = 450; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
-        
-        // Animation
-        this.currentFrame = 1;
-        this.animationTimer = 0;
-        this.animationSpeed = 32;
+    
+        this.playerDirection = 'down' // default direction
     }
     
     /**
@@ -118,8 +115,13 @@ export default class Player {
             y: targetRow * this.GRID_SIZE + this.GRID_SIZE / 2
         };
     }
+    
+    update(delta) {
+        this._updatePlayerMovement(delta);
+        this._updateAnimation();
+    }
 
-        /**
+    /**
      * Smoothly moves the player sprite toward the target pixel position each frame.
      * @param {*} delta - Time in milliseconds since the last frame.
      * @returns {void}
@@ -147,7 +149,7 @@ export default class Player {
         }
     }
 
-        /**
+    /**
      * Cycles through walking frames while the palyer is moving, or resets to a directional idle sprite when stopped.
      * @param {*} delta - Time in milliseconds since last frame
      * @returns {void}
@@ -171,6 +173,46 @@ export default class Player {
     }
 
     /**
+     * Starts the walking animation for the current direction
+     * or shows the idle frame when the player stops
+     */
+    _updateAnimation() {
+        if (this.isMoving) {
+            const animKey = 'human_walk_' + this.playerDirection;
+            if (this.player.anims.currentAnim?.key !== animKey) {
+                this.player.play(animKey);
+            }
+        } else {
+            // stop running animation and set idle
+            this.player.anims.stop();
+            this._setIdleFrame();
+        }
+    }
+
+    /**
+     * Sets the idle sprite based on the last direction moved
+     */
+    _setIdleFrame() {
+        let idleKey;
+        switch (this.playerDirection) {
+            case 'up':
+                idleKey = 'human_back_still';
+                break;
+            case 'down':
+                idleKey = 'human_front_still';
+                break;
+            case 'left':
+                idleKey = 'human_left_1';
+                break;
+            case 'right':
+                idleKey = 'human_right_1';
+                break;
+        }
+        this.player.setTexture(idleKey);
+        this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
+    }
+
+    /**
      * Updates the player's facing direction and swaps the the matching idle sprite.
      * @param {string} direction - Direction in which the player is now facing: 'up', 'down', 'left' or 'right'.
      * @returns {void}
@@ -178,8 +220,7 @@ export default class Player {
     _changePlayerDirection(direction) {
         if (this.playerDirection !== direction) {
             this.playerDirection = direction;
-            this.player.setTexture(`human_${direction}`);
-            this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
+            this._updateAnimation();
         }
     }
 }

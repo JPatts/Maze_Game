@@ -7,6 +7,8 @@ import Key from "../../entities/Key";
 import Door from "../../entities/Door"; 
 import GameRecorder from "../../recording/GameRecorder";
 
+const AnimationFrameRate = 8;
+
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'Game' });
@@ -33,25 +35,29 @@ export default class GameScene extends Phaser.Scene {
         // background images
         this.load.image('background', 'assets/Board/grass_patch_1.png');
         
-        // human images
-        for (let i = 1; i <= 6; i++) {
-            this.load.image(`human_frame_${i}`, `assets/Human/human_${i}.png`);
-        }
+        // human images 
+        this.load.image('human_front_still',    'assets/Human/human_front_still.png'); 
+        this.load.image('human_back_still',     'assets/Human/human_back_still.png'); 
+        this.load.image('human_down_1',         'assets/Human/human_down_1.png'); 
+        this.load.image('human_down_2',         'assets/Human/human_down_2.png'); 
+        this.load.image('human_left_1',         'assets/Human/human_left_1.png');
+        this.load.image('human_left_2',         'assets/Human/human_left_2.png');
+        this.load.image('human_left_3',         'assets/Human/human_left_3.png');
+        this.load.image('human_right_1',        'assets/Human/human_right_1.png');
+        this.load.image('human_right_2',        'assets/Human/human_right_2.png');
+        this.load.image('human_right_3',        'assets/Human/human_right_3.png');
        
-        this.load.image('human_down', 'assets/Human/human_1.png'); 
-        this.load.image('human_up', 'assets/Human/human_1.png');
-        this.load.image('human_left', 'assets/Human/human_2.png');
-        this.load.image('human_right', 'assets/Human/human_1.png');
-
-        // Zombie images
-        for (let i = 1; i <= 6; i++) {
-            this.load.image(`zombie_frame_${i}`, `assets/Zombie/zombie_${i}.png`);
-        }
-       
-        this.load.image('zombie_down', 'assets/Zombie/zombie_1.png'); 
-        this.load.image('zombie_up', 'assets/Zombie/zombie_1.png');
-        this.load.image('zombie_left', 'assets/Zombie/zombie_2.png');
-        this.load.image('zombie_right', 'assets/Zombie/zombie_3.png');
+        // zombie images
+        this.load.image('zombie_front_still',   'assets/Zombie/zombie_still_front.png'); 
+        this.load.image('zombie_back_still',    'assets/Zombie/zombie_still_back.png'); 
+        this.load.image('zombie_down_1',        'assets/Zombie/zombie_down_1.png'); 
+        this.load.image('zombie__down_2',       'assets/Zombie/zombie_down_2.png');
+        this.load.image('zombie_left_1',        'assets/Zombie/zombie_left_1.png');
+        this.load.image('zombie_left_2',        'assets/Zombie/zombie_left_2.png');
+        this.load.image('zombie_left_3',        'assets/Zombie/zombie_left_3.png');
+        this.load.image('zombie_right_1',       'assets/Zombie/zombie_right_1.png');
+        this.load.image('zombie_right_2',       'assets/Zombie/zombie_right_2.png');
+        this.load.image('zombie_right_3',       'assets/Zombie/zombie_right_3.png');
 
         // key images
         for (let i = 1; i <= 24; i++) {
@@ -128,6 +134,91 @@ export default class GameScene extends Phaser.Scene {
         this.winTriggered = false;
         this.showWelcomeScreen();
 
+        this.anims.create({
+            key: 'human_walk_down',
+            frames: [
+                { key: 'human_down_1' },
+                { key: 'human_down_2' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'human_walk_up',
+            frames: [
+                { key: 'human_up_1' },
+                { key: 'human_up_2' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'human_walk_left',
+            frames: [
+                { key: 'human_left_1' },
+                { key: 'human_left_2' },
+                { key: 'human_left_3' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'human_walk_right',
+            frames: [
+                { key: 'human_right_1' },
+                { key: 'human_right_2' },
+                { key: 'human_right_3' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        // zombie animations
+        this.anims.create({
+            key: 'zombie_walk_down',
+            frames: [
+                { key: 'zombie_down_1' },
+                { key: 'zombie_down_2' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'zombie_walk_up',
+            frames: [
+                { key: 'zombie_up_1' },
+                { key: 'zombie_up_2' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'zombie_walk_left',
+            frames: [
+                { key: 'zombie_left_1' },
+                { key: 'zombie_left_2' },
+                { key: 'zombie_left_3' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'zombie_walk_right',
+            frames: [
+                { key: 'zombie_right_1' },
+                { key: 'zombie_right_2' },
+                { key: 'zombie_right_3' },
+            ],
+            frameRate: AnimationFrameRate,
+            repeat: -1
+        })
+
         /**
         this.input.keyboard.on('keydown-M', () => {
             this.exportMazeLayout();
@@ -194,10 +285,10 @@ export default class GameScene extends Phaser.Scene {
                 this._triggerGameOver();
                 return;
             }
-    
+   
+        // recieve input; move player
         this.playerEntity._handlePlayerInput();
-        this.playerEntity._updatePlayerMovement(delta);
-        this.playerEntity._handleWalkingAnimation(delta);
+        this.playerEntity.update(delta);
 
         // Zombie 
         if (!this.winTriggered) {

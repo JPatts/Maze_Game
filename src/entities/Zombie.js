@@ -91,7 +91,7 @@ export default class Zombie {
         if (this.scene.gameOver) return;
         if (this.isMoving) {
             this._updateMovement(delta);
-            this._handleWalkingAnimation(delta);
+            this._updateAnimation();
             return;
         }
 
@@ -324,5 +324,45 @@ export default class Zombie {
                 this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
             }
         }
+    }
+
+    /**
+     * Starts the walking animation for the current direction
+     * or shows the idle frame when the player stops
+     */
+    _updateAnimation() {
+        if (this.isMoving) {
+            const animKey = 'zombie_walk_' + this.currentDirection;
+            if (this.sprite.anims.currentAnim?.key !== animKey) {
+                this.sprite.play(animKey);
+            }
+        } else {
+            // stop running animation and set idle
+            this.player.anims.stop();
+            this._setIdleFrame();
+        }
+    }
+
+    /**
+     * Sets the idle sprite based on the last direction moved
+     */
+    _setIdleFrame() {
+        let idleKey;
+        switch (this.currentDirection) {
+            case 'up':
+                idleKey = 'zombie_back_still';
+                break;
+            case 'down':
+                idleKey = 'zombie_front_still';
+                break;
+            case 'left':
+                idleKey = 'zombie_left_1';
+                break;
+            case 'right':
+                idleKey = 'zombie_right_1';
+                break;
+        }
+        this.sprite.setTexture(idleKey);
+        this.sprite.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
     }
 }
