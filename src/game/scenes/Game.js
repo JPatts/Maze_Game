@@ -42,8 +42,6 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('human_up', 'assets/Human/human_1.png');
         this.load.image('human_left', 'assets/Human/human_2.png');
         this.load.image('human_right', 'assets/Human/human_1.png');
-        this.load.image('human_dead', 'assets/Human/human_dead.png');
-        this.load.image('tombstone', 'assets/Human/tombstone.png');
 
         // Zombie images
         for (let i = 1; i <= 6; i++) {
