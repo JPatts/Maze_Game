@@ -15,7 +15,7 @@ export default class Player {
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
     
-        this.playerDirection = 'down' // default direction
+        this.playerDirection = 'human_front_still' // default direction
     }
     
     /**
@@ -33,10 +33,10 @@ export default class Player {
         const startX = this.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
         const startY = this.playerGridPos.row * this.GRID_SIZE + this.GRID_SIZE / 2;
         
-        this.player = this.scene.add.sprite(startX, startY, 'human_down');
+        this.player = this.scene.add.sprite(startX, startY, 'human_front_still');
         this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
         
-        this.playerDirection = 'down';
+        this.playerDirection = 'human_front_still';
         this.targetPosition = { x: startX, y: startY };
     }
 

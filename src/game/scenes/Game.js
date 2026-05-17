@@ -38,6 +38,8 @@ export default class GameScene extends Phaser.Scene {
         // human images 
         this.load.image('human_front_still',    'assets/Human/human_front_still.png'); 
         this.load.image('human_back_still',     'assets/Human/human_back_still.png'); 
+        this.load.image('human_up_1',         'assets/Human/human_down_1.png'); 
+        this.load.image('human_up_2',         'assets/Human/human_down_2.png'); 
         this.load.image('human_down_1',         'assets/Human/human_down_1.png'); 
         this.load.image('human_down_2',         'assets/Human/human_down_2.png'); 
         this.load.image('human_left_1',         'assets/Human/human_left_1.png');
@@ -50,8 +52,10 @@ export default class GameScene extends Phaser.Scene {
         // zombie images
         this.load.image('zombie_front_still',   'assets/Zombie/zombie_still_front.png'); 
         this.load.image('zombie_back_still',    'assets/Zombie/zombie_still_back.png'); 
+        this.load.image('zombie_up_1',         'assets/Human/human_down_1.png'); 
+        this.load.image('zombie_up_2',         'assets/Human/human_down_2.png'); 
         this.load.image('zombie_down_1',        'assets/Zombie/zombie_down_1.png'); 
-        this.load.image('zombie__down_2',       'assets/Zombie/zombie_down_2.png');
+        this.load.image('zombie_down_2',       'assets/Zombie/zombie_down_2.png');
         this.load.image('zombie_left_1',        'assets/Zombie/zombie_left_1.png');
         this.load.image('zombie_left_2',        'assets/Zombie/zombie_left_2.png');
         this.load.image('zombie_left_3',        'assets/Zombie/zombie_left_3.png');

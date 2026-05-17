@@ -14,7 +14,7 @@ export default class Zombie {
         this.zombieSize = zombieSize;
         this.wallManager = wallManager;
         this.mazeGenerator = mazeGenerator;
-        this.currentDirection = 'down';
+        this.currentDirection = 'zombie_front_still';
 
         // Qtable data 
         this.qTable = null
@@ -27,7 +27,7 @@ export default class Zombie {
         this.targetPosition = {x: 0, y: 0};
         // this.moveDirection = {x: 0, y: 0};
         this.speed = 400; // pixels per second
-        this.lastAnimDirection = 'down';
+        this.lastAnimDirection = 'zombie_front_still';
 
         // Animation
         this.walkFrame = 1;
@@ -338,7 +338,7 @@ export default class Zombie {
             }
         } else {
             // stop running animation and set idle
-            this.player.anims.stop();
+            this.sprite.anims.stop();
             this._setIdleFrame();
         }
     }
