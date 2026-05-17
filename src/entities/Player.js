@@ -14,8 +14,10 @@ export default class Player {
         this.moveSpeed = 450; // pixels per second
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
-    
-        this.playerDirection = 'down' // default direction
+        this.playerDirection = 'down'
+        this.walkCycleCounter = 0;
+        this.lastMoveDirection = 'down';
+
     }
     
     /**
@@ -26,8 +28,6 @@ export default class Player {
         this.playerGridPos = {
             row: 14,
             col: 0
-            // row: Math.floor(this.BOARD_HEIGHT / 2),
-            // col: Math.floor(this.BOARD_WIDTH / 2)
         };
         
         const startX = this.playerGridPos.col * this.GRID_SIZE + this.GRID_SIZE / 2;
@@ -36,7 +36,7 @@ export default class Player {
         this.player = this.scene.add.sprite(startX, startY, 'human_front_still');
         this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
         
-        this.playerDirection = 'human_front_still';
+        this.playerDirection = 'down';
         this.targetPosition = { x: startX, y: startY };
     }
 
@@ -114,11 +114,12 @@ export default class Player {
             x: targetCol * this.GRID_SIZE + this.GRID_SIZE / 2,
             y: targetRow * this.GRID_SIZE + this.GRID_SIZE / 2
         };
+
+        this._advanceWalkFrame();
     }
     
     update(delta) {
         this._updatePlayerMovement(delta);
-        this._updateAnimation();
     }
 
     /**
@@ -149,19 +150,48 @@ export default class Player {
         }
     }
 
-    /**
-     * Starts the walking animation for the current direction
-     * or shows the idle frame when the player stops
+    /** 
+     * Cycles throught the walk frame every time a new movement is started
+     * Called from _StartMovement()
      */
-    _updateAnimation() {
-        if (this.isMoving) {
-            const animKey = 'human_walk_' + this.playerDirection;
-            if (this.player.anims.currentAnim?.key !== animKey) {
-                this.player.play(animKey);
-            }
+    _advanceWalkFrame() {
+        // only advance if the direction hasn't changed
+        if (this.playerDirection === this.lastMoveDirection) {
+            this.walkCycleCounter++;
         } else {
-            // stop running animation and set idle
-            this.player.anims.stop();
+            // direction changed; therefore reset
+            this.walkCycleCounter = 0;
+            this.lastMoveDirection = this,this.playerDirection;
+        }
+
+        // Now set the correct texture based on direction & counter
+        this._updateWalkTexture();
+    }
+
+    /**
+     * Sets the oakyer sprite to the correct walk frame or idle texture
+     */
+    _updateWalkTexture() {
+        if (this.isMoving) {
+            let textureKey;
+            switch (this.playerDirection) {
+                case 'up':
+                    // two frames 
+                    textureKey = `human_up_${(this.walkCycleCounter % 2) + 1}`;
+                    break;
+                case 'down':
+                    textureKey = `human_down_${(this.walkCycleCounter % 2) + 1}`;
+                    break;
+                case 'left':
+                    textureKey = `human_left_${(this.walkCycleCounter % 3) + 1}`;
+                    break;
+                case 'right':
+                    textureKey = `human_right_${(this.walkCycleCounter % 3) + 1}`;
+                    break;
+            }
+            this.player.setTexture(textureKey);
+            this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
+        } else {
             this._setIdleFrame();
         }
     }
@@ -197,7 +227,6 @@ export default class Player {
     _changePlayerDirection(direction) {
         if (this.playerDirection !== direction) {
             this.playerDirection = direction;
-            this._updateAnimation();
         }
     }
 }

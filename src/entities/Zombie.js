@@ -27,6 +27,8 @@ export default class Zombie {
         // this.moveDirection = {x: 0, y: 0};
         this.speed = 400; // pixels per second
         this.lastAnimDirection = 'down';
+        this.walkCycleCounter = 0;
+        this.lastMoveDirection = 'down';
 
         // Animation
         this.walkFrame = 1;
@@ -90,7 +92,6 @@ export default class Zombie {
         if (this.scene.gameOver) return;
         if (this.isMoving) {
             this._updateMovement(delta);
-            this._updateAnimation();
             return;
         }
 
@@ -245,6 +246,7 @@ export default class Zombie {
      */
     _startMovement(targetRow, targetCol) {
         this.isMoving = true;
+        this._advanceWalkFrame();
 
         // Determine direction from movement delta  
         const dRow = targetRow - this.zombieGridPos.row;
@@ -309,19 +311,36 @@ export default class Zombie {
         }
     }
 
-    /**
-     * Starts the walking animation for the current direction
-     * or shows the idle frame when the player stops
-     */
-    _updateAnimation() {
-        if (this.isMoving) {
-            const animKey = 'zombie_walk_' + this.currentDirection;
-            if (this.sprite.anims.currentAnim?.key !== animKey) {
-                this.sprite.play(animKey);
-            }
+    _advanceWalkFrame() {
+        if (this.currentDirection === this.lastMoveDirection) {
+            this.walkCycleCounter++;
         } else {
-            // stop running animation and set idle
-            this.sprite.anims.stop();
+            this.walkCycleCounter = 0;
+            this.lastMoveDirection = this.currentDirection;
+        }
+        this._updateWalkTexture();
+    }
+
+    _updateWalkTexture() {
+        if (this.isMoving) {
+            let textureKey;
+            switch (this.currentDirection) {
+                case 'up':
+                    textureKey = `zombie_up_${(this.walkCycleCounter % 2) + 1}`;
+                    break;
+                case 'down':
+                    textureKey = `zombie_down_${(this.walkCycleCounter % 2) + 1}`;
+                    break;
+                case 'left':
+                    textureKey = `zombie_left_${(this.walkCycleCounter % 3) + 1}`;
+                    break;
+                case 'right':
+                    textureKey = `zombie_right_${(this.walkCycleCounter % 3) + 1}`;
+                    break;
+            }
+            this.sprite.setTexture(textureKey);
+            this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
+        } else {
             this._setIdleFrame();
         }
     }
