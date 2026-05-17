@@ -15,7 +15,7 @@ export default class Player {
         this.targetPosition = null;
         this.playerGridPos = { row: 0, col: 0 };
     
-        this.playerDirection = 'human_front_still' // default direction
+        this.playerDirection = 'down' // default direction
     }
     
     /**
@@ -146,29 +146,6 @@ export default class Player {
             const ratio = speed / distance;
             this.player.x += dx * ratio;
             this.player.y += dy * ratio;
-        }
-    }
-
-    /**
-     * Cycles through walking frames while the palyer is moving, or resets to a directional idle sprite when stopped.
-     * @param {*} delta - Time in milliseconds since last frame
-     * @returns {void}
-     */
-    _handleWalkingAnimation(delta) {
-        if (this.isMoving) {
-            this.animationTimer += delta;
-            if (this.animationTimer >= this.animationSpeed) {
-                this.animationTimer = 0;
-                this.currentFrame = (this.currentFrame % 6) + 1;
-                this.player.setTexture(`human_frame_${this.currentFrame}`);
-                this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
-            }
-        } else {
-            if (this.currentFrame !== 0) {
-                this.currentFrame = 0;
-                this.player.setTexture(`human_${this.playerDirection}`);
-                this.player.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
-            }
         }
     }
 

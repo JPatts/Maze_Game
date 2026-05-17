@@ -14,8 +14,7 @@ export default class Zombie {
         this.zombieSize = zombieSize;
         this.wallManager = wallManager;
         this.mazeGenerator = mazeGenerator;
-        this.currentDirection = 'zombie_front_still';
-
+        this.currentDirection = 'down'
         // Qtable data 
         this.qTable = null
         this.epsilon = 0;
@@ -27,7 +26,7 @@ export default class Zombie {
         this.targetPosition = {x: 0, y: 0};
         // this.moveDirection = {x: 0, y: 0};
         this.speed = 400; // pixels per second
-        this.lastAnimDirection = 'zombie_front_still';
+        this.lastAnimDirection = 'down';
 
         // Animation
         this.walkFrame = 1;
@@ -76,7 +75,7 @@ export default class Zombie {
         const startY = row * this.gridSize + this.gridSize / 2;
 
 
-        this.sprite = this.scene.add.sprite(startX,startY, 'zombie_down');
+        this.sprite = this.scene.add.sprite(startX,startY, 'zombie_front_still');
         this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
         this.sprite.setDepth(10);
     }
@@ -246,6 +245,15 @@ export default class Zombie {
      */
     _startMovement(targetRow, targetCol) {
         this.isMoving = true;
+
+        // Determine direction from movement delta  
+        const dRow = targetRow - this.zombieGridPos.row;
+        const dCol = targetCol - this.zombieGridPos.col;
+        if (dRow < 0) this.currentDirection = 'up';
+        else if (dRow > 0) this.currentDirection = 'down';
+        else if (dCol < 0) this.currentDirection = 'left';
+        else if (dCol > 0) this.currentDirection = 'right';
+
         this.targetPosition = {
             x: targetCol * this.gridSize + this.gridSize / 2,
             y: targetRow * this.gridSize + this.gridSize / 2
@@ -301,31 +309,6 @@ export default class Zombie {
         }
     }
 
-    /** 
-     * Cycles through walking frames
-     * @param {number} delta
-     */
-    _handleWalkingAnimation(delta) {
-        if (this.isMoving) {
-            this.walkTimer += delta;
-            if (this.walkTimer >= this.walkInterval) {
-                this.walkTimer = 0;
-                this.walkFrame = (this.walkFrame % 6) + 1;
-                const frameKey = `zombie_frame_${this.walkFrame}`;
-                if (this.scene.textures.exists(frameKey)) {
-                    this.sprite.setTexture(frameKey);
-                    this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
-                }
-            }
-        } else {
-            const idleKey = `zombie_${this.currentDirection}`;
-            if (this.scene.textures.exists(idleKey)) {
-                this.sprite.setTexture(idleKey);
-                this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
-            }
-        }
-    }
-
     /**
      * Starts the walking animation for the current direction
      * or shows the idle frame when the player stops
@@ -363,6 +346,6 @@ export default class Zombie {
                 break;
         }
         this.sprite.setTexture(idleKey);
-        this.sprite.setDisplaySize(this.PLAYER_SIZE, this.PLAYER_SIZE);
+        this.sprite.setDisplaySize(this.zombieSize, this.zombieSize);
     }
 }
