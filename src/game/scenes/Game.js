@@ -7,7 +7,7 @@ import Key from "../../entities/Key";
 import Door from "../../entities/Door"; 
 import GameRecorder from "../../recording/GameRecorder";
 
-const AnimationFrameRate = 8;
+const AnimationFrameRate = 24;
 
 export default class GameScene extends Phaser.Scene {
     constructor() {

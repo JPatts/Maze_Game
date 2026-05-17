@@ -295,6 +295,7 @@ export default class Zombie {
             this.sprite.x = this.targetPosition.x;
             this.sprite.y = this.targetPosition.y;
             this.isMoving = false;
+            this._setIdleFrame();
 
             // Update lgical grid position 
             this.zombieGridPos.row = Math.round(

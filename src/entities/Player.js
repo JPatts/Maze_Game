@@ -142,6 +142,7 @@ export default class Player {
             this.player.x = this.targetPosition.x;
             this.player.y = this.targetPosition.y;
             this.isMoving = false;
+            this._setIdleFrame();
         } else {
             // Move toward target
             const ratio = speed / distance;
@@ -161,7 +162,7 @@ export default class Player {
         } else {
             // direction changed; therefore reset
             this.walkCycleCounter = 0;
-            this.lastMoveDirection = this,this.playerDirection;
+            this.lastMoveDirection = this.playerDirection;
         }
 
         // Now set the correct texture based on direction & counter

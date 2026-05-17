@@ -7,7 +7,6 @@ class GameRecorder {
         this.startTime = Date.now();
         this.outcome = null;
 
-        // game config 
         this.config = {
             boardWidth: 15,
             boardHeight: 15,
@@ -46,7 +45,7 @@ class GameRecorder {
             timestamp
         });
 
-        // If this is a zombie move, also record and experience tuple for RL training
+        // Record zombie experience tuple for RL training
         if (entity === 'zombie'){
             this.recordZombieExperience(action, fromRow, fromCol, toRow, toCol);
         }
@@ -54,7 +53,6 @@ class GameRecorder {
 
     /**
      * Records a zombie RL epxerience tuple
-     * 
      */
     recordZombieExperience(action, fromRow, fromCol, toRow, toCol) {
         const state = [fromRow, fromCol];
@@ -120,7 +118,7 @@ class GameRecorder {
     }
 
     /**
-     * Marks the final zombie experience as termianl
+     * Marks the final zombie experience as terminal
      */
     finalizeExperiences() {
         if (this.experiences.length > 0) {
